@@ -1,0 +1,33 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+img {
+    vertical-align: middle;
+}
+
+a {
+    color: #31302F;
+    text-decoration: none
+}
+
+a:hover {
+    color: #FE8470;
+}
+
+menu {
+    text-align: center;
+    font-family: Noto+Sans+KR:wght@900;
+    background-color: #F8EEE1;
+}
+
+footer {
+    text-align: center;
+    color: #F8EEE1;
+    background-color: #31302F;
+}
