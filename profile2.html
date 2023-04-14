@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SUNNY의 링크트리</title>
+    <style>
+        @import url('css/pretendard.css');
+
+        * {
+            font-family: "Pretendard", serif;
+        }
+
+        body {
+            background-color: #44398A;
+        }
+
+        .profile {
+            width: 100px;
+            height: 100px;
+
+            border-radius: 100%;
+
+            border: 2px solid white;
+
+            background-image: url('img/sunny_profile2.jpg');
+            background-position: center;
+            background-size: cover;
+        }
+
+        .main {
+            color: white;
+            font-size: 20px;
+            margin-top: 30px;
+            margin-bottom: 10px;
+        }
+
+        .sub {
+            color: white;
+            font-size: 14px;
+            margin-top: 0px;
+            margin-bottom: 30px;
+        }
+
+        .wrap {
+            width: 350px;
+            margin: 30px auto 0px auto;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .wrap>a {
+            font-size: 14px;
+            font-weight: bold;
+            color: #44398A;
+
+            background-color: white;
+            border-radius: 8px;
+
+            box-shadow: 3px 3px 5px 0px black;
+
+            width: 300px;
+            height: 50px;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+
+            margin-bottom: 10px;
+            text-decoration: none;
+        }
+
+        .wrap>a:hover {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="profile"></div>
+        <h1 class="main">SUNNY</h1>
+        <p class="sub">인공지능.. 좋아하세요?</p>
+        <a target="_blank" href="https://chat.openai.com/chat">ChatGPT</a>
+        <a target="_blank" href="https://labs.openai.com/">DALL·E</a>
+        <a target="_blank" href="https://stablediffusionweb.com/">Stable Diffusion</a>
+        <a target="_blank" href="https://www.craiyon.com/">Craiyon</a>
+    </div>
+</body>
+
+</html>
