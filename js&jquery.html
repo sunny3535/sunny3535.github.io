@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <ul id="menu">
+        <li>menu1</li>
+        <li>menu2</li>
+        <li>menu3</li>
+    </ul>
+    // javascript
+    //menu 노트 찾기
+    //li 리스트 구하기
+    //li 개수만큼 루프 돌며 스타일 변경
+    //i번째 li 접근
+    //스타일 변경
+    <script>
+        var menu = document.getElementById("menu");
+        var liList = menu.getElementsByTagName("li");
+        for (var i = 0; i < liList.length; i++) {
+            var li = liList[i];
+            li.style.color = "#f00";
+        }
+    </script>
+
+    // jquery
+    <script>
+        $("#menu li").css("color", "#f00");
+    </script>
+</body>
+
+</html>

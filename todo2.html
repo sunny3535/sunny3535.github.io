@@ -4,27 +4,65 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <title>써니의 모멘텀</title>
     <style>
         body {
-            background-color: gray;
+            color: white;
+
+            height: 95vh;
+            width: 95vw;
+            background-image: url('https://owldictionary.com/wp-content/uploads/2022/04/architecture-4529605_1920-1600x1056.jpg'); 
+            background-position: center;
+            background-size: cover;
+        }
+        .greeting {
+            font-size: 50px;
+        }
+        .time{
+            font-size: 80px;
+            font-weight: bold;
+        }
+        .todo {
+            font-size: 25px;
+        }
+        .author {
+            font-size: 20px;
+            font-style: italic;
+        }
+        .main {
+            width: 95vw;
+            height: 75vh;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .quote {
+            width: 95vw;
+            height: 20vh;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
     </style>
+    <script src="js/todo.js"></script>
 </head>
 <body>
     <div class="main">
-        <div class="time">12:25</div>
+        <div id="time" class="time">12:25</div>
         <div class="greeting">Hello</div>
         <div class="todo">주 3회 운동하기</div>
     </div>
     <div class="quote">
-        <div class="author">명언 저자</div>
-        <div class="content">명언 내용</div>
+        <div id="author" class="author">명언 저자</div>
+        <div id="content" class="content">명언 내용</div>
     </div>
 </body>
 </html>
-
-
 
 
 
