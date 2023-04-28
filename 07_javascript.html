@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>써니의 링크 트리</title>
+    <style>
+        @import url('css/pretendard.css');
+
+        * {
+            font-family: "Pretendard", serif;
+        }
+
+        body {
+            background-color: #44398a;
+        }
+
+        .profile {
+            width: 100px;
+            height: 100px;
+            background-color: green;
+            border-radius: 100%;
+            border: 2px solid white;
+            background-image: url('img/sunny_profile.jpg');
+            background-position: center;
+            background-size: cover;
+        }
+
+        .main {
+            color: white;
+            font-size: 20px;
+            margin-top: 30px;
+            margin-bottom: 10px;
+        }
+
+        .sub {
+            color: white;
+            font-size: 14px;
+            margin-top: 0px;
+            margin-bottom: 30px;
+        }
+
+        .wrap {
+            width: 300px;
+            margin: 30px auto 0px auto;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .wrap>a {
+            width: 300px;
+            height: 50px;
+            background-color: white;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 3px 3px 5px 0px black;
+
+            font-size: 14px;
+            font-weight: bold;
+            color: #44398a;
+            text-decoration: none;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .wrap>a:hover {
+            background-color: #f2f2f2;
+        }
+    </style>
+    <script>
+        function hey() {
+            let myemail = 'sunny.pcmh@gmail.com'
+            let result = myemail.split('@') 
+
+            console.log(result[0])
+            console.log(result[1])
+
+            let result2 = result[1].split('.') 
+
+            console.log(result2[0])
+            console.log(result2[1])
+
+            console.log(myemail.split('@')[1].split('.')[0])
+        }
+    </script>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="profile" onclick="hey()"></div>
+        <h1 class="main">SUNNY</h1>
+        <p class="sub">인공지능.. 좋아하세요?</p>
+        <a target="_blank" href="https://chat.openai.com/chat">ChatGPT</a>
+        <a target="_blank" href="https://labs.openai.com/">DALL·E</a>
+        <a target="_blank" href="https://stablediffusionweb.com/">Stable Diffusion</a>
+        <a target="_blank" href="https://www.craiyon.com/">Craiyon</a>
+    </div>
+</body>
+
+</html>
