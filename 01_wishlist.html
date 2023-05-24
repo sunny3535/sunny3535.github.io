@@ -47,13 +47,41 @@
         .msg {
             margin: -5px 0 15px;
         }
+        .elice {
+            position: fixed;
+            right: 10px;
+            bottom: 10px;
+
+            /* 아이콘 이동 애니메이션 관련 설정 */
+            animation-name: elice_move;
+            animation-duration: 2s;
+            animation-duration: linear;
+            animation-iteration-count: infinite;
+            animation-direction: alternate;
+            animation-fill-mode: forwards;
+        }
+
+        .elice img {
+            width: 150px;
+            cursor: pointer;
+        }
+
+        @keyframes elice_move {
+            0% {
+                bottom: 0px;
+            }
+
+            100% {
+                bottom: 100px;
+            }
+        }
     </style>
     <link rel="stylesheet" type="text/css"
         href="https://s3.ap-northeast-2.amazonaws.com/materials.spartacodingclub.kr/bucketList/sparta-bucket2.css">
 </head>
 
 <body class="bg center">
-    <h1 class="title">동아리 WishList</h1>
+    <h1 class="title">SUNNY의 WishList</h1>
     <p class="msg">이번엔 꼭 지키자!</p>
     <div class="flex-row wrap">
         <div class="bucket img1 center">Wish List 페이지 만들기</div>
@@ -62,6 +90,9 @@
         <div class="bucket img1 center done">ChatGPT로 페이지 만들기</div>
         <div class="bucket img1 center">날씨를 알려주는 페이지 만들기</div>
         <div class="bucket img2 center">포스팅박스 만들기</div>
+    </div>
+    <div class="elice">
+        <img src="https://cdn-api.elice.io/api-attachment/attachment/374ed47f70a44e3089d7d29a272774d8/%E1%84%80%E1%85%AA%E1%84%86%E1%85%A9%E1%86%A8%20%E1%84%89%E1%85%A1%E1%86%BC%E1%84%83%E1%85%A1%E1%86%AB%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5.png" onclick="showModal()" />
     </div>
 </body>
 
