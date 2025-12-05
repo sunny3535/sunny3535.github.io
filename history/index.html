@@ -1,0 +1,547 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>역사 연표 드래그 퀴즈</title>
+    <style>
+        :root {
+            font-family: "Segoe UI", "Noto Sans KR", Arial, sans-serif;
+            color: #0f172a;
+            background-color: #f8fafc;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 2rem 1rem 4rem;
+        }
+
+        main {
+            background: #fff;
+            width: min(900px, 100%);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 25px 60px rgba(15, 23, 42, 0.1);
+        }
+
+        .quiz-title {
+            background-color: #22c55e;
+            color: #fff;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.75rem;
+            margin-top: 0;
+            font-size: 1.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+
+
+        h2 {
+            margin-bottom: 0.35rem;
+            font-size: 1.1rem;
+            color: #1d4ed8;
+        }
+
+        section {
+            margin-top: 1.5rem;
+        }
+
+        .card {
+            background: #eef2ff;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            line-height: 1.5;
+        }
+
+        .metrics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        .metrics span {
+            color: #475569;
+            font-size: 0.95rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+        }
+
+        select,
+        input,
+        button {
+            font-size: 1rem;
+        }
+
+        select,
+        input[type="number"] {
+            width: 100%;
+            padding: 0.7rem;
+            border-radius: 0.5rem;
+            border: 1px solid #cbd5f5;
+            box-sizing: border-box;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1.4rem;
+            font-weight: 600;
+            transition: transform 0.1s ease, opacity 0.2s ease;
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(1px);
+        }
+
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .primary {
+            background: #2563eb;
+            color: #fff;
+        }
+
+        .secondary {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .button-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .board {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .drop-column {
+            background: #f8fafc;
+            border-radius: 0.85rem;
+            padding: 1.25rem;
+            border: 1px dashed #cbd5f5;
+            min-height: 260px;
+        }
+
+        .drop-column h3 {
+            margin: 0 0 0.5rem;
+            font-size: 1.05rem;
+        }
+
+        .drop-column p {
+            margin: 0 0 0.9rem;
+            color: #475569;
+            font-size: 0.9rem;
+        }
+
+        .card-stack {
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .drop-active {
+            border-color: #2563eb;
+            background: #e0edff;
+        }
+
+        .event-card {
+            background: #fff;
+            border: 1px solid #cbd5f5;
+            border-radius: 0.75rem;
+            padding: 0.85rem;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+            cursor: grab;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .event-card.dragging {
+            opacity: 0.6;
+            border-style: dashed;
+        }
+
+        .event-card strong {
+            font-size: 1.05rem;
+        }
+
+        .event-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #475569;
+        }
+
+        .hint {
+            color: #475569;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+
+        .result-box {
+            margin-top: 1.5rem;
+            background: #fff1f2;
+            border-radius: 0.85rem;
+            padding: 1.2rem;
+            color: #9d174d;
+        }
+
+        .result-box strong {
+            display: block;
+            margin-bottom: 0.35rem;
+        }
+
+        .result-box ul {
+            margin: 0.5rem 0 0;
+            padding-left: 1.2rem;
+            color: #475569;
+        }
+
+        .stats-row {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            font-size: 0.95rem;
+            color: #475569;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1 class="quiz-title">⏳ 역사 연표 드래그 퀴즈</h1>
+        <p>사건 순서를 맞추며 자연스럽게 연대기를 익히는 학습형 드래그 앤 드롭 게임입니다.</p>
+
+        <section class="card">
+            <h2>1. 개요 및 문제 정의</h2>
+            <p>복잡한 역사적 사건을 단순 암기하는 대신, 선후 관계를 맞추는 인터랙티브 퀴즈로 몰입도를 높입니다.</p>
+        </section>
+
+        <section>
+            <h2>2. 목표 및 성공 지표</h2>
+            <div class="metrics">
+                <span>목표: 연대기적 사고력 강화</span>
+                <span>평균 정답률 75% 이상</span>
+                <span>친구 공유 기능 월 100회 이상</span>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>3. 타겟 사용자</h2>
+            <p>한국사·세계사 시험을 준비하는 수험생, 연대표 기반 논술 대비 학습자.</p>
+        </section>
+
+        <section>
+            <h2>4. 핵심 기능 요구사항</h2>
+            <ul>
+                <li>2~4개 역사 사건 카드가 무작위 등장</li>
+                <li>카드를 드래그해 연표 영역에 정렬</li>
+                <li>'확인' 버튼으로 정답/연도 비교</li>
+                <li>시대 필터(삼국, 고려 등) 선택 기능</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>5. 퀴즈 설정</h2>
+            <div class="controls-grid">
+                <div>
+                    <label for="eraSelect">시대 선택</label>
+                    <select id="eraSelect">
+                        <option value="all">전체 (한국사 + 세계사)</option>
+                        <option value="구석기시대">구석기 시대</option>
+                        <option value="신석기시대">신석기 시대</option>
+                        <option value="삼국시대">삼국시대</option>
+                        <option value="고려시대">고려시대</option>
+                        <option value="조선시대">조선시대</option>
+                        <option value="근현대">근현대</option>
+                        <option value="세계사">세계사</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="cardCount">카드 수 (2~4개)</label>
+                    <select id="cardCount">
+                        <option value="4">4개 (권장)</option>
+                        <option value="3">3개</option>
+                        <option value="2">2개</option>
+                    </select>
+                </div>
+            </div>
+            <div class="button-row">
+                <button id="generateBtn" class="primary">문제 생성</button>
+                <button id="shareBtn" class="secondary">친구에게 공유</button>
+            </div>
+            <p class="hint">사건 카드를 연대기 순(오래된 사건이 위)으로 정렬해 보세요.</p>
+            <div class="stats-row">
+                <span>도전 수: <strong id="attemptStat">0</strong></span>
+                <span>정답 수: <strong id="correctStat">0</strong></span>
+                <span>정답률: <strong id="accuracyStat">0%</strong></span>
+            </div>
+        </section>
+
+        <section class="board">
+            <div class="drop-column">
+                <h3>사건 카드 풀</h3>
+                <p>무작위 카드가 여기 나타납니다. 원하는 카드부터 잡아 드래그하세요.</p>
+                <div id="pool" class="card-stack" data-drop-zone="pool"></div>
+            </div>
+            <div class="drop-column">
+                <h3>연표 정렬 구역</h3>
+                <p>위에서 아래로 오래된 사건 → 최근 사건 순으로 정렬합니다.</p>
+                <div id="timeline" class="card-stack" data-drop-zone="timeline"></div>
+            </div>
+        </section>
+
+        <section>
+            <button id="checkBtn" class="primary" style="margin-top: 1rem; width: 100%;" disabled>정답 확인</button>
+        </section>
+
+        <section class="result-box" id="feedback">
+            <strong>풀이 안내</strong>
+            <span>문제를 생성한 뒤 연대기를 완성하면 정답과 실제 연도가 여기에 표시됩니다.</span>
+        </section>
+    </main>
+
+    <script>
+        const EVENTS = [
+            { title: "낙랑군 설치", year: 108, era: "삼국시대", detail: "한사군 설치" },
+            { title: "고구려 광개토왕 즉위", year: 391, era: "삼국시대", detail: "영토 확장" },
+            { title: "백제 근초고왕 전성기", year: 346, era: "삼국시대", detail: "해상 교역 확대" },
+            { title: "신라 선덕여왕 즉위", year: 632, era: "삼국시대", detail: "첨성대 건립" },
+            { title: "대조영의 발해 건국", year: 698, era: "삼국시대", detail: "고구려 계승" },
+            { title: "후삼국 통일", year: 936, era: "고려시대", detail: "태조 왕건" },
+            { title: "문벌 귀족의 이자겸의 난", year: 1126, era: "고려시대", detail: "이자겸의 외척 세력" },
+            { title: "묘청의 서경 천도 운동", year: 1135, era: "고려시대", detail: "풍수지리 사상" },
+            { title: "무신정변", year: 1170, era: "고려시대", detail: "정중부 주도" },
+            { title: "몽골 1차 침입", year: 1231, era: "고려시대", detail: "귀주성 전투" },
+            { title: "과전법 시행", year: 1391, era: "조선시대", detail: "신진 사대부 토지 제도" },
+            { title: "세종 즉위", year: 1418, era: "조선시대", detail: "훈민정음 창제" },
+            { title: "임진왜란 발발", year: 1592, era: "조선시대", detail: "도요토미 정권 침략" },
+            { title: "병자호란", year: 1636, era: "조선시대", detail: "청 태종 침입" },
+            { title: "흥선대원군 집권", year: 1863, era: "근현대", detail: "쇄국 정책" },
+            { title: "갑신정변", year: 1884, era: "근현대", detail: "개화파 정변" },
+            { title: "대한민국 임시정부 수립", year: 1919, era: "근현대", detail: "상하이 임정" },
+            { title: "한국전쟁 발발", year: 1950, era: "근현대", detail: "6·25" },
+            { title: "5·18 민주화 운동", year: 1980, era: "근현대", detail: "광주" },
+            { title: "베를린 장벽 붕괴", year: 1989, era: "세계사", detail: "냉전 종식" },
+            { title: "프랑스 혁명", year: 1789, era: "세계사", detail: "바스티유 습격" },
+            { title: "미국 독립 선언", year: 1776, era: "세계사", detail: "필라델피아" },
+            { title: "산업 혁명 확산", year: 1760, era: "세계사", detail: "영국" },
+            { title: "러시아 혁명", year: 1917, era: "세계사", detail: "볼셰비키" }
+        ];
+
+        const eraSelect = document.getElementById("eraSelect");
+        const cardCountSelect = document.getElementById("cardCount");
+        const generateBtn = document.getElementById("generateBtn");
+        const shareBtn = document.getElementById("shareBtn");
+        const pool = document.getElementById("pool");
+        const timeline = document.getElementById("timeline");
+        const checkBtn = document.getElementById("checkBtn");
+        const feedbackBox = document.getElementById("feedback");
+        const attemptStat = document.getElementById("attemptStat");
+        const correctStat = document.getElementById("correctStat");
+        const accuracyStat = document.getElementById("accuracyStat");
+
+        let currentRound = null;
+        let attempts = 0;
+        let correctAnswers = 0;
+
+        const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+        const shuffle = (array) => {
+            for (let i = array.length - 1; i > 0; i -= 1) {
+                const j = randomInt(0, i);
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        };
+
+        const pickEvents = (era, count) => {
+            const pool = era === "all" ? EVENTS : EVENTS.filter((event) => event.era === era);
+            const source = pool.length >= count ? [...pool] : [...EVENTS];
+            return shuffle(source).slice(0, count);
+        };
+
+        const createCard = (event) => {
+            const card = document.createElement("article");
+            card.className = "event-card";
+            card.draggable = true;
+            card.dataset.year = String(event.year);
+            card.dataset.id = event.id;
+            card.innerHTML = `<strong>${event.title}</strong><div class="event-meta"><span>${event.era}</span><span>${event.detail}</span></div>`;
+            card.addEventListener("dragstart", () => card.classList.add("dragging"));
+            card.addEventListener("dragend", () => card.classList.remove("dragging"));
+            return card;
+        };
+
+        const renderRound = () => {
+            pool.innerHTML = "";
+            timeline.innerHTML = "";
+            if (!currentRound) {
+                return;
+            }
+            currentRound.events.forEach((event) => {
+                const card = createCard(event);
+                pool.appendChild(card);
+            });
+            checkBtn.disabled = false;
+            feedbackBox.innerHTML = "<strong>풀이 안내</strong><span>카드를 모두 연표에 올린 뒤 정답을 확인하세요.</span>";
+        };
+
+        const prepareRound = () => {
+            const era = eraSelect.value;
+            const count = Number(cardCountSelect.value);
+            const picked = pickEvents(era, count).map((event, index) => ({
+                ...event,
+                id: `${Date.now().toString(36)}-${index}-${Math.random().toString(36).slice(2, 6)}`
+            }));
+            currentRound = { events: picked };
+            renderRound();
+        };
+
+        const updateStats = (isCorrect) => {
+            attempts += 1;
+            if (isCorrect) {
+                correctAnswers += 1;
+            }
+            const accuracy = attempts ? Math.round((correctAnswers / attempts) * 100) : 0;
+            attemptStat.textContent = attempts;
+            correctStat.textContent = correctAnswers;
+            accuracyStat.textContent = `${accuracy}%`;
+        };
+
+        const getDragAfterElement = (container, y) => {
+            const elements = [...container.querySelectorAll(".event-card:not(.dragging)")];
+            return elements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset, element: child };
+                }
+                return closest;
+            }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
+        };
+
+        const registerDropZone = (zone) => {
+            zone.addEventListener("dragover", (event) => {
+                event.preventDefault();
+                const dragging = document.querySelector(".event-card.dragging");
+                if (!dragging) {
+                    return;
+                }
+                const afterElement = getDragAfterElement(zone, event.clientY);
+                if (!afterElement) {
+                    zone.appendChild(dragging);
+                } else if (afterElement !== dragging) {
+                    zone.insertBefore(dragging, afterElement);
+                }
+                zone.classList.add("drop-active");
+            });
+
+            zone.addEventListener("dragleave", (event) => {
+                const related = event.relatedTarget;
+                if (!zone.contains(related)) {
+                    zone.classList.remove("drop-active");
+                }
+            });
+
+            zone.addEventListener("drop", (event) => {
+                event.preventDefault();
+                zone.classList.remove("drop-active");
+            });
+        };
+
+        registerDropZone(pool);
+        registerDropZone(timeline);
+
+        const verifyOrder = () => {
+            if (!currentRound) {
+                feedbackBox.innerHTML = "<strong>안내</strong><span>먼저 문제를 생성하세요.</span>";
+                return;
+            }
+
+            const timelineCards = [...timeline.querySelectorAll(".event-card")];
+            if (timelineCards.length !== currentRound.events.length) {
+                feedbackBox.innerHTML = "<strong>경고</strong><span>모든 카드를 연표에 올려야 정답 확인이 가능합니다.</span>";
+                return;
+            }
+
+            const userOrder = timelineCards.map((card) => card.dataset.id);
+            const correctSequence = [...currentRound.events]
+                .sort((a, b) => a.year - b.year)
+                .map((event) => event.id);
+
+            const isCorrect = userOrder.every((id, index) => id === correctSequence[index]);
+            updateStats(isCorrect);
+
+            const title = isCorrect ? "정답입니다!" : "오답입니다.";
+            const timelineList = [...currentRound.events]
+                .sort((a, b) => a.year - b.year)
+                .map((event) => `<li>${event.year}년 - ${event.title}</li>`) // HTML list items
+                .join("");
+
+            feedbackBox.innerHTML = `<strong>${title}</strong>
+                <span>${isCorrect ? "완벽한 연대기 정렬!" : "정확한 연대 순서는 아래와 같습니다."}</span>
+                <ul>${timelineList}</ul>`;
+        };
+
+        const shareProgress = async () => {
+            const accuracyText = accuracyStat.textContent;
+            const message = `나는 역사 연표 드래그 퀴즈에서 정답률 ${accuracyText}! 너도 도전해 볼래?`;
+            if (navigator.share) {
+                try {
+                    await navigator.share({ title: "역사 연표 드래그 퀴즈", text: message, url: window.location.href });
+                    alert("공유 링크를 전송했어요!");
+                } catch (error) {
+                    if (error.name !== "AbortError") {
+                        alert("공유를 완료하지 못했습니다. 다른 방법을 시도해 주세요.");
+                    }
+                }
+            } else if (navigator.clipboard) {
+                try {
+                    await navigator.clipboard.writeText(`${message} ${window.location.href}`);
+                    alert("메시지를 클립보드에 복사했어요. 붙여넣기로 공유하세요!");
+                } catch (error) {
+                    alert("클립보드 복사에 실패했습니다. 직접 링크를 전달해 주세요.");
+                }
+            } else {
+                alert("이 브라우저는 공유/복사를 지원하지 않습니다.");
+            }
+        };
+
+        generateBtn.addEventListener("click", prepareRound);
+        checkBtn.addEventListener("click", verifyOrder);
+        shareBtn.addEventListener("click", shareProgress);
+    </script>
+</body>
+</html>

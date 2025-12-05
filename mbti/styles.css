@@ -1,0 +1,265 @@
+/* Light Theme for MBTI App */
+
+:root {
+  font-family: 'Inter', sans-serif;
+  color: #334155; /* Dark slate for text */
+  background-color: #f1f5f9; /* Light lavender-gray background */
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 2rem 1rem 4rem;
+}
+
+main {
+  background: #ffffff; /* Clean white main panel */
+  width: min(900px, 100%);
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08); /* Softer shadow */
+  border: 1px solid #e2e8f0;
+}
+
+.main-title {
+  background-color: #fecaca; /* Soft, light red (pastel pink/red) */
+  color: #9f1239; /* Darker red for contrast */
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.75rem;
+  font-size: 1.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+}
+
+h1 {
+  margin-top: 0;
+}
+
+h2 {
+  margin-top: 1.5rem;
+  font-size: 1.5rem;
+  color: #1e3a8a; /* Deep blue */
+}
+
+p {
+  line-height: 1.5;
+}
+
+.lead {
+  font-size: 1.1rem;
+  color: #64748b; /* Medium slate gray */
+}
+
+.button-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+button {
+  cursor: pointer;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  padding: 0.7rem 1rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  background: #f8fafc; /* Off-white */
+  color: #475569;
+  font-size: 0.9rem;
+}
+
+button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+button:hover:not(:disabled) {
+  background-color: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+button.active {
+  background: #3b82f6; /* Bright blue for active */
+  color: #fff;
+  border-color: #3b82f6;
+}
+
+button.active:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.result-card {
+  background: #f8fafc; /* Light gray to distinguish from main */
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-top: 2rem;
+}
+
+.result-header .tagline {
+  display: block;
+  font-size: 0.9rem;
+  color: #4338ca; /* Indigo */
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.result-header h2 {
+  margin-top: 0;
+  font-size: 1.8rem;
+  color: #1e293b; /* Darker slate */
+}
+
+.result-header p {
+  color: #475569; /* Medium slate */
+  margin-top: 0.75rem;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.badge {
+  background: #e0e7ff; /* Light indigo */
+  color: #4338ca; /* Indigo text */
+  padding: 0.3rem 0.7rem;
+  border-radius: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.section-title {
+  font-weight: 700;
+  color: #1e3a8a; /* Deep blue */
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+li {
+  background: #ffffff;
+  border-left: 3px solid #60a5fa; /* Light blue accent */
+  padding: 0.6rem 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.95rem;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+  border-left-width: 3px;
+}
+
+li:last-child {
+  margin-bottom: 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.actions button {
+  flex-grow: 1;
+  padding: 0.85rem 1.5rem;
+  font-size: 1rem;
+  color: #fff;
+  border: none;
+}
+
+.actions button:hover {
+  opacity: 0.9;
+}
+
+.actions button:first-child {
+  background: #64748b; /* Medium slate gray */
+}
+
+.actions button:first-child:hover {
+  background: #475569;
+}
+
+.actions button:last-child {
+  background: #3b82f6; /* Bright blue */
+}
+
+.actions button:last-child:hover {
+  background: #2563eb;
+}
+
+.result-card h2 {
+  margin-bottom: 0;
+}
+
+.result-card .section-title {
+  margin-top: 1rem;
+  margin-bottom: 0.3rem;
+  font-size: 1rem;
+}
+
+.result-card li {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 600px) {
+  .main-title {
+    font-size: 1.5rem;
+    padding: 0.6rem 1rem;
+  }
+
+  main {
+    padding: 1.5rem;
+  }
+
+  .lead {
+    font-size: 1rem;
+  }
+
+  h2 {
+    font-size: 1.3rem;
+  }
+
+  .button-grid {
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+  }
+
+  button {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.85rem;
+  }
+
+  .result-card {
+    padding: 1.2rem;
+  }
+
+  .result-header h2 {
+    font-size: 1.6rem;
+  }
+
+  .actions button {
+    font-size: 0.9rem;
+    padding: 0.75rem 1rem;
+  }
+}
