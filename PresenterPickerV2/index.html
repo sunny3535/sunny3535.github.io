@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Presenter Picker v2</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- 1. Variables & Theme --- */
+        :root {
+            /* Palette */
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --accent: #f43f5e;
+            --success: #10b981;
+            
+            /* Light Theme Defaults */
+            --bg-body: #f3f4f6;
+            --bg-surface: #ffffff;
+            --bg-glass: rgba(255, 255, 255, 0.9);
+            --text-main: #111827;
+            --text-sub: #6b7280;
+            --border: #e5e7eb;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --hero-gradient: linear-gradient(135deg, #4f46e5 0%, #8b5cf6 100%);
+        }
+
+        body.dark-mode {
+            --bg-body: #0f172a;
+            --bg-surface: #1e293b;
+            --bg-glass: rgba(30, 41, 59, 0.95);
+            --text-main: #f3f4f6;
+            --text-sub: #9ca3af;
+            --border: #374151;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            --hero-gradient: linear-gradient(135deg, #312e81 0%, #4c1d95 100%);
+        }
+
+        /* --- 2. Base Reset & Layout --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', system-ui, -apple-system, sans-serif; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
+        
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            /* 배경 패턴 */
+            background-image: radial-gradient(var(--text-sub) 1px, transparent 1px);
+            background-size: 24px 24px;
+            background-position: 0 0;
+        }
+
+        body.dark-mode {
+             background-image: radial-gradient(#374151 1px, transparent 1px);
+        }
+
+        /* --- 3. Confetti Canvas --- */
+        #confetti-canvas {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 1000;
+        }
+
+        /* --- 4. Hero Section --- */
+        .hero {
+            background: var(--hero-gradient);
+            color: white;
+            padding: 3rem 1.5rem 4rem;
+            text-align: center;
+            border-bottom-left-radius: 3rem;
+            border-bottom-right-radius: 3rem;
+            box-shadow: var(--shadow);
+            position: relative;
+            z-index: 10;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            letter-spacing: -0.025em;
+        }
+
+        .hero p { opacity: 0.9; font-size: 1.1rem; }
+
+        .theme-toggle {
+            position: absolute;
+            top: 1.5rem; right: 1.5rem;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            transition: transform 0.2s, background 0.2s;
+        }
+        .theme-toggle:hover { transform: rotate(15deg) scale(1.1); background: rgba(255,255,255,0.3); }
+
+        /* --- 5. Main Container --- */
+        .container {
+            max-width: 800px;
+            margin: -3rem auto 2rem;
+            padding: 0 1.5rem;
+            position: relative;
+            z-index: 20;
+            width: 100%;
+        }
+
+        .app-card {
+            background: var(--bg-surface);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            border: 1px solid var(--border);
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* --- 6. Input Area --- */
+        .input-wrapper {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 2rem;
+            background: var(--bg-body);
+            padding: 6px;
+            border-radius: 16px;
+            border: 2px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: var(--primary);
+        }
+
+        .input-wrapper input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 12px 16px;
+            font-size: 1rem;
+            color: var(--text-main);
+            outline: none;
+        }
+
+        .btn-add {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.1s, background 0.2s;
+        }
+        .btn-add:hover { background: var(--primary-dark); }
+        .btn-add:active { transform: scale(0.95); }
+
+        /* --- 7. Result Stage --- */
+        .stage-area {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+            border: 2px dashed var(--primary);
+            border-radius: 20px;
+            height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-display {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--text-sub);
+            opacity: 0.5;
+            transition: all 0.2s;
+        }
+
+        .result-display.active {
+            color: var(--text-main);
+            opacity: 1;
+        }
+
+        .result-display.winner {
+            color: var(--primary);
+            font-size: 3.5rem;
+            text-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            animation: winnerPop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* --- 8. Participant Grid --- */
+        .participant-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 2rem;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 4px; /* for shadow clipping */
+        }
+
+        /* Scrollbar styling */
+        .participant-grid::-webkit-scrollbar { width: 6px; }
+        .participant-grid::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 3px; }
+
+        .card-item {
+            background: var(--bg-body);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            cursor: default;
+            animation: fadeIn 0.3s ease;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+        }
+
+        .card-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-color: var(--primary);
+        }
+
+        .card-avatar {
+            width: 40px; height: 40px;
+            background: #e0e7ff;
+            color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        body.dark-mode .card-avatar { background: #312e81; color: #a5b4fc; }
+
+        .card-name { font-weight: 600; font-size: 0.95rem; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
+
+        .btn-delete-card {
+            position: absolute;
+            top: 4px; right: 4px;
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            color: var(--text-sub);
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.2s;
+        }
+        .card-item:hover .btn-delete-card { opacity: 1; }
+        .btn-delete-card:hover { background: var(--accent); color: white; }
+
+        /* --- 9. CTA Button --- */
+        .btn-cta {
+            width: 100%;
+            padding: 1.2rem;
+            background: var(--hero-gradient);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.3rem;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        .btn-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5); }
+        .btn-cta:active { transform: translateY(0); }
+        .btn-cta:disabled { background: var(--text-sub); cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.7; }
+
+        /* --- 10. Toast Notification --- */
+        #toast-container {
+            position: fixed;
+            bottom: 20px; right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 2000;
+        }
+
+        .toast {
+            background: var(--bg-surface);
+            color: var(--text-main);
+            padding: 12px 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border-left: 5px solid var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 250px;
+            animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            font-weight: 500;
+        }
+        .toast.success { border-left-color: var(--success); }
+        .toast.error { border-left-color: var(--accent); }
+
+        /* --- Animations --- */
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        @keyframes winnerPop { 0% { transform: scale(0.5); } 50% { transform: scale(1.4); } 70% { transform: scale(0.9); } 100% { transform: scale(1); } }
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOutRight { to { transform: translateX(100%); opacity: 0; } }
+
+        /* --- Mobile Responsive --- */
+        @media (max-width: 600px) {
+            .hero { padding: 2rem 1rem 3rem; }
+            .hero h1 { font-size: 2rem; }
+            .app-card { padding: 1.5rem; }
+            .participant-grid { grid-template-columns: repeat(2, 1fr); }
+            .btn-delete-card { opacity: 1; background: rgba(0,0,0,0.05); } /* 모바일은 호버가 없으므로 항상 표시 */
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <header class="hero">
+        <button class="theme-toggle" id="themeToggle" aria-label="다크 모드 전환">
+            <i class="fas fa-moon"></i>
+        </button>
+        <h1><i class="fas fa-dice-d20"></i> Pick Master</h1>
+        <p>오늘의 주인공은 누구일까요?</p>
+    </header>
+
+    <main class="container">
+        <div class="app-card">
+            <div class="input-wrapper">
+                <input type="text" id="nameInput" placeholder="참가자 이름 추가..." autocomplete="off">
+                <button class="btn-add" onclick="app.addParticipant()">
+                    <i class="fas fa-plus"></i> 추가
+                </button>
+            </div>
+
+            <div class="stage-area">
+                <div id="resultDisplay" class="result-display">Ready</div>
+            </div>
+
+            <div class="participant-header" style="display:flex; justify-content:space-between; margin-bottom:10px; color:var(--text-sub); font-size:0.9rem;">
+                <span>참가자 목록 (<span id="count">0</span>)</span>
+                <span style="font-size:0.8rem;"><i class="fas fa-info-circle"></i> 최소 2명 이상</span>
+            </div>
+            
+            <div id="participantGrid" class="participant-grid">
+                <!-- Cards will be injected here -->
+            </div>
+
+            <button id="pickBtn" class="btn-cta" onclick="app.startPick()">
+                <i class="fas fa-play"></i> START PICK
+            </button>
+        </div>
+    </main>
+
+    <div id="toast-container"></div>
+
+    <script>
+        /**
+         * SoundSynthesizer
+         * Web Audio API를 사용하여 외부 파일 없이 효과음을 생성합니다.
+         */
+        class SoundSynthesizer {
+            constructor() {
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            playTone(freq, type, duration, volume = 0.1) {
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                
+                gain.gain.setValueAtTime(volume, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + duration);
+            }
+
+            playClick() {
+                this.playTone(800, 'sine', 0.1, 0.1);
+            }
+
+            playAdd() {
+                this.playTone(600, 'sine', 0.1, 0.05);
+                setTimeout(() => this.playTone(1000, 'sine', 0.1, 0.05), 50);
+            }
+
+            playDelete() {
+                this.playTone(300, 'square', 0.1, 0.05);
+            }
+
+            playRoll() {
+                // 틱틱 거리는 소리
+                this.playTone(1200, 'triangle', 0.05, 0.05);
+            }
+
+            playWin() {
+                // 빠밤빠밤! (C Major Arpeggio)
+                const now = this.ctx.currentTime;
+                const notes = [523.25, 659.25, 783.99, 1046.50, 783.99, 1046.50];
+                const times = [0, 0.1, 0.2, 0.3, 0.5, 0.6];
+                
+                notes.forEach((freq, i) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.frequency.value = freq;
+                    osc.type = 'triangle';
+                    
+                    gain.gain.setValueAtTime(0, now + times[i]);
+                    gain.gain.linearRampToValueAtTime(0.2, now + times[i] + 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + times[i] + 0.5);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now + times[i]);
+                    osc.stop(now + times[i] + 0.6);
+                });
+            }
+        }
+
+        /**
+         * App Logic
+         */
+        const app = {
+            data: [],
+            isRolling: false,
+            audio: new SoundSynthesizer(),
+            
+            init() {
+                this.cacheDOM();
+                this.bindEvents();
+                this.render();
+                this.initTheme();
+                this.resizeCanvas();
+            },
+
+            cacheDOM() {
+                this.dom = {
+                    input: document.getElementById('nameInput'),
+                    grid: document.getElementById('participantGrid'),
+                    count: document.getElementById('count'),
+                    result: document.getElementById('resultDisplay'),
+                    btn: document.getElementById('pickBtn'),
+                    toastContainer: document.getElementById('toast-container'),
+                    themeToggle: document.getElementById('themeToggle'),
+                    canvas: document.getElementById('confetti-canvas'),
+                    ctx: document.getElementById('confetti-canvas').getContext('2d')
+                };
+            },
+
+            bindEvents() {
+                this.dom.input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.addParticipant();
+                });
+                
+                window.addEventListener('resize', () => this.resizeCanvas());
+                
+                this.dom.themeToggle.addEventListener('click', () => {
+                    document.body.classList.toggle('dark-mode');
+                    const isDark = document.body.classList.contains('dark-mode');
+                    this.dom.themeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+                    this.audio.playClick();
+                });
+            },
+
+            initTheme() {
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.body.classList.add('dark-mode');
+                    this.dom.themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                }
+            },
+
+            // --- Participant Logic ---
+
+            addParticipant() {
+                const name = this.dom.input.value.trim();
+                if (!name) {
+                    this.showToast('이름을 입력해주세요!', 'error');
+                    return;
+                }
+                
+                this.data.push(name);
+                this.dom.input.value = '';
+                this.dom.input.focus();
+                this.audio.playAdd();
+                this.render();
+                this.showToast(`${name}님이 추가되었습니다.`);
+            },
+
+            deleteParticipant(index) {
+                if (this.isRolling) return;
+                const removed = this.data.splice(index, 1);
+                this.audio.playDelete();
+                this.render();
+                this.showToast(`${removed}님이 삭제되었습니다.`, 'error');
+            },
+
+            render() {
+                this.dom.grid.innerHTML = '';
+                this.data.forEach((name, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'card-item';
+                    // 랜덤 아바타 아이콘 선택
+                    const icons = ['fa-user', 'fa-user-astronaut', 'fa-user-ninja', 'fa-user-tie', 'fa-user-graduate', 'fa-smile'];
+                    const icon = icons[index % icons.length];
+                    
+                    card.innerHTML = `
+                        <div class="card-avatar"><i class="fas ${icon}"></i></div>
+                        <div class="card-name">${name}</div>
+                        <button class="btn-delete-card" onclick="app.deleteParticipant(${index})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    this.dom.grid.appendChild(card);
+                });
+                this.dom.count.textContent = this.data.length;
+                
+                // 상태 초기화
+                if (!this.isRolling) {
+                    if (this.data.length === 0) {
+                        this.dom.result.textContent = 'Ready';
+                        this.dom.result.className = 'result-display';
+                    }
+                }
+            },
+
+            // --- Pick Logic ---
+
+            startPick() {
+                if (this.data.length < 2) {
+                    this.showToast('최소 2명 이상의 참가자가 필요합니다.', 'error');
+                    this.audio.playDelete(); // Error sound substitute
+                    return;
+                }
+                if (this.isRolling) return;
+
+                this.isRolling = true;
+                this.dom.btn.disabled = true;
+                this.dom.btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 추첨 중...';
+                this.dom.result.classList.remove('winner');
+                this.dom.result.classList.add('active');
+
+                let count = 0;
+                const totalRolls = 30; // 롤링 횟수
+                let speed = 50;
+
+                const roll = () => {
+                    const randomName = this.data[Math.floor(Math.random() * this.data.length)];
+                    this.dom.result.textContent = randomName;
+                    this.audio.playRoll();
+                    
+                    count++;
+                    if (count < totalRolls) {
+                        // 점점 느려지게
+                        if (count > totalRolls - 10) speed += 30;
+                        setTimeout(roll, speed);
+                    } else {
+                        this.finalizePick();
+                    }
+                };
+                roll();
+            },
+
+            finalizePick() {
+                const winner = this.data[Math.floor(Math.random() * this.data.length)];
+                this.dom.result.textContent = winner;
+                this.dom.result.classList.add('winner');
+                
+                this.audio.playWin();
+                this.fireConfetti();
+                this.showToast(`🎉 당첨! ${winner}님 축하합니다!`, 'success');
+
+                this.isRolling = false;
+                this.dom.btn.disabled = false;
+                this.dom.btn.innerHTML = '<i class="fas fa-redo"></i> 다시 뽑기';
+            },
+
+            // --- Utilities ---
+
+            showToast(msg, type = 'success') {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+                toast.innerHTML = `<i class="fas ${icon}"></i> <span>${msg}</span>`;
+                
+                this.dom.toastContainer.appendChild(toast);
+                
+                // Animate out
+                setTimeout(() => {
+                    toast.style.animation = 'fadeOutRight 0.3s forwards';
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            },
+
+            // --- Confetti System (Canvas) ---
+            resizeCanvas() {
+                this.dom.canvas.width = window.innerWidth;
+                this.dom.canvas.height = window.innerHeight;
+            },
+
+            fireConfetti() {
+                const particles = [];
+                const colors = ['#6366f1', '#f43f5e', '#10b981', '#fbbf24', '#8b5cf6'];
+                
+                for (let i = 0; i < 150; i++) {
+                    particles.push({
+                        x: window.innerWidth / 2,
+                        y: window.innerHeight / 2,
+                        vx: (Math.random() - 0.5) * 20,
+                        vy: (Math.random() - 0.5) * 20 - 5,
+                        life: 1,
+                        color: colors[Math.floor(Math.random() * colors.length)],
+                        size: Math.random() * 8 + 4
+                    });
+                }
+
+                const animate = () => {
+                    this.dom.ctx.clearRect(0, 0, this.dom.canvas.width, this.dom.canvas.height);
+                    let active = false;
+
+                    particles.forEach(p => {
+                        if (p.life > 0) {
+                            p.x += p.vx;
+                            p.y += p.vy;
+                            p.vy += 0.3; // gravity
+                            p.vx *= 0.95; // friction
+                            p.life -= 0.01;
+                            
+                            this.dom.ctx.globalAlpha = p.life;
+                            this.dom.ctx.fillStyle = p.color;
+                            this.dom.ctx.beginPath();
+                            this.dom.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                            this.dom.ctx.fill();
+                            active = true;
+                        }
+                    });
+
+                    if (active) requestAnimationFrame(animate);
+                    else this.dom.ctx.clearRect(0, 0, this.dom.canvas.width, this.dom.canvas.height);
+                };
+                animate();
+            }
+        };
+
+        // Initialize
+        app.init();
+    </script>
+</body>
+</html>
