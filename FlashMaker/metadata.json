@@ -1,0 +1,5 @@
+{
+  "name": "Gemini 플래시 메이커",
+  "description": "Gemini 2.5 Flash를 사용하여 어떤 주제로든 공부용 플래시카드를 즉시 생성하세요.",
+  "requestFramePermissions": []
+}
