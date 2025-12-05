@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎉 럭키 발표자 뽑기</title>
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg-gradient: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-sub: #6b7280;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* 캔버스 (파티클 배경) */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* 메인 카드 */
+        .card {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 500px;
+            border-radius: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+            transition: transform 0.3s ease;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            color: var(--text-main);
+            margin-bottom: 1.5rem;
+            font-weight: 800;
+        }
+
+        /* 입력 영역 */
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .btn-add {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-add:hover {
+            background: var(--primary-hover);
+        }
+
+        /* 참가자 리스트 (태그 스타일) */
+        .participant-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 2rem;
+            min-height: 60px;
+            justify-content: center;
+        }
+
+        .tag {
+            background: #f3f4f6;
+            color: var(--text-main);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tag span {
+            font-weight: 500;
+        }
+
+        .btn-delete {
+            background: #d1d5db;
+            color: white;
+            border: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            font-size: 12px;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .btn-delete:hover {
+            background: var(--danger);
+        }
+
+        /* 결과 표시 영역 */
+        .result-area {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2rem;
+            background: #f9fafb;
+            border-radius: 16px;
+            border: 2px dashed #e5e7eb;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .result-text {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--text-main);
+            transition: all 0.1s;
+        }
+
+        .winner-mode {
+            color: var(--primary-color);
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+        }
+
+        /* 메인 버튼 */
+        .btn-pick {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(to right, #6366f1, #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .btn-pick:active {
+            transform: scale(0.98);
+        }
+
+        .btn-pick:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .footer {
+            margin-top: 1.5rem;
+            color: var(--text-sub);
+            font-size: 0.85rem;
+        }
+
+        /* 애니메이션 정의 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.5); }
+            70% { transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        @media (max-width: 480px) {
+            .card { padding: 1.5rem; }
+            h1 { font-size: 1.5rem; }
+            .result-text { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 파티클 효과용 캔버스 -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <div class="card">
+        <h1>🎉 발표자 뽑기</h1>
+
+        <div class="input-group">
+            <input type="text" id="nameInput" placeholder="참가자 이름 입력 (예: 김철수)" onkeypress="handleEnter(event)">
+            <button class="btn-add" onclick="addParticipant()">추가</button>
+        </div>
+
+        <div id="participantList" class="participant-list">
+            <!-- 참가자 태그들이 여기에 추가됩니다 -->
+        </div>
+
+        <div class="result-area">
+            <div id="resultText" class="result-text">Ready?</div>
+        </div>
+
+        <button id="pickBtn" class="btn-pick" onclick="startPick()">🎲 발표자 선정하기</button>
+
+        <div class="footer">
+            총 인원: <span id="count">0</span>명
+        </div>
+    </div>
+
+    <script>
+        // --- 상태 관리 ---
+        let participants = [];
+        let isRolling = false;
+
+        // --- DOM 요소 ---
+        const nameInput = document.getElementById('nameInput');
+        const participantList = document.getElementById('participantList');
+        const resultText = document.getElementById('resultText');
+        const pickBtn = document.getElementById('pickBtn');
+        const countSpan = document.getElementById('count');
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // --- 초기화 ---
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        // --- 기능 로직 ---
+
+        function handleEnter(e) {
+            if (e.key === 'Enter') addParticipant();
+        }
+
+        function addParticipant() {
+            const name = nameInput.value.trim();
+            if (!name) return;
+
+            // 중복 체크 (선택 사항, 여기서는 허용하되 경고는 없음)
+            participants.push(name);
+            nameInput.value = '';
+            nameInput.focus();
+            renderList();
+        }
+
+        function deleteParticipant(index) {
+            if (isRolling) return; // 추첨 중 삭제 방지
+            participants.splice(index, 1);
+            renderList();
+        }
+
+        function renderList() {
+            participantList.innerHTML = '';
+            participants.forEach((name, index) => {
+                const tag = document.createElement('div');
+                tag.className = 'tag';
+                tag.innerHTML = `
+                    <span>${name}</span>
+                    <button class="btn-delete" onclick="deleteParticipant(${index})">×</button>
+                `;
+                participantList.appendChild(tag);
+            });
+            countSpan.textContent = participants.length;
+            
+            // 리스트 상태에 따라 버튼 활성화/비활성화
+            if (participants.length === 0) {
+                resultText.textContent = "Ready?";
+                resultText.classList.remove('winner-mode');
+            }
+        }
+
+        function startPick() {
+            if (participants.length === 0) {
+                alert('참가자를 먼저 추가해주세요!');
+                return;
+            }
+            if (isRolling) return;
+
+            isRolling = true;
+            pickBtn.disabled = true;
+            pickBtn.textContent = "두구두구두구...";
+            resultText.classList.remove('winner-mode');
+            
+            // 롤링 효과
+            let counter = 0;
+            const rollInterval = setInterval(() => {
+                const randomIndex = Math.floor(Math.random() * participants.length);
+                resultText.textContent = participants[randomIndex];
+                // 텍스트 약간 흔들림 효과
+                resultText.style.transform = `scale(${0.9 + Math.random() * 0.2})`; 
+                counter++;
+            }, 80); // 0.08초마다 이름 변경
+
+            // 3초 후 결과 발표
+            setTimeout(() => {
+                clearInterval(rollInterval);
+                const winnerIndex = Math.floor(Math.random() * participants.length);
+                const winner = participants[winnerIndex];
+                
+                showWinner(winner);
+                
+                isRolling = false;
+                pickBtn.disabled = false;
+                pickBtn.textContent = "🎲 다시 뽑기";
+            }, 3000);
+        }
+
+        function showWinner(winner) {
+            resultText.style.transform = 'scale(1)'; // 트랜스폼 초기화
+            resultText.textContent = `👑 ${winner} 👑`;
+            resultText.classList.add('winner-mode');
+            
+            playWinSound();
+            fireConfetti();
+        }
+
+        // --- 오디오 효과 (Web Audio API) ---
+        // 외부 파일 없이 브라우저 내장 API로 '띠링~' 소리 생성
+        function playWinSound() {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) return;
+
+            const audioCtx = new AudioContext();
+            
+            // 도, 미, 솔, 높은 도 (C Major)
+            const notes = [523.25, 659.25, 783.99, 1046.50];
+            const start = audioCtx.currentTime;
+
+            notes.forEach((freq, i) => {
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+
+                oscillator.type = 'sine';
+                oscillator.frequency.value = freq;
+
+                // 볼륨 엔벨로프 (부드럽게 커졌다 작아짐)
+                gainNode.gain.setValueAtTime(0, start + i * 0.1);
+                gainNode.gain.linearRampToValueAtTime(0.3, start + i * 0.1 + 0.05);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, start + i * 0.1 + 0.4);
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                oscillator.start(start + i * 0.1);
+                oscillator.stop(start + i * 0.1 + 0.5);
+            });
+        }
+
+        // --- 파티클 시스템 (폭죽 효과) ---
+        let particles = [];
+
+        class Particle {
+            constructor() {
+                this.x = canvas.width / 2;
+                this.y = canvas.height / 2;
+                // 랜덤한 방향으로 퍼짐
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = Math.random() * 10 + 5;
+                this.vx = Math.cos(angle) * velocity;
+                this.vy = Math.sin(angle) * velocity;
+                this.gravity = 0.2;
+                this.friction = 0.95;
+                this.alpha = 1;
+                this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                this.size = Math.random() * 8 + 4;
+            }
+
+            update() {
+                this.vx *= this.friction;
+                this.vy *= this.friction;
+                this.vy += this.gravity;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.alpha -= 0.015;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function fireConfetti() {
+            // 파티클 100개 생성
+            for (let i = 0; i < 100; i++) {
+                particles.push(new Particle());
+            }
+            animateConfetti();
+        }
+
+        function animateConfetti() {
+            if (particles.length === 0) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                return;
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+
+                if (particles[i].alpha <= 0) {
+                    particles.splice(i, 1);
+                    i--;
+                }
+            }
+
+            requestAnimationFrame(animateConfetti);
+        }
+    </script>
+</body>
+</html>
