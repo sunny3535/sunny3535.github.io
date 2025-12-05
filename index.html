@@ -1,41 +1,191 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>수업 자료 포트폴리오</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        .title {
-            color: red;
-            background-color: beige;
+        /* 기본 설정 */
+        :root {
+            --primary-color: #4a90e2;
+            --bg-color: #f4f7f9;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --hover-shadow: 0 10px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* 컨테이너 */
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 40px 20px;
+        }
+
+        /* 헤더 스타일 */
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        /* 섹션 스타일 */
+        section {
+            margin-bottom: 60px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            border-left: 5px solid var(--primary-color);
+            padding-left: 15px;
+            margin-bottom: 20px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        /* 그리드 레이아웃 (카드 배치) */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        /* 카드 스타일 */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            text-decoration: none;
+            color: var(--text-color);
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            height: 100px; /* 카드 높이 고정 */
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+            background-color: var(--primary-color);
+        }
+
+        .card:hover span {
+            color: white;
+            font-weight: 700;
+        }
+
+        .card span {
+            font-size: 1.1rem;
+            font-weight: 500;
+            word-break: keep-all;
+        }
+
+        /* 반응형 */
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 2rem;
+            }
+            .grid-container {
+                grid-template-columns: 1fr; /* 모바일에서는 한 줄에 하나씩 */
+            }
         }
     </style>
 </head>
 
 <body>
-    <h1 class="title">환영합니다</h1>
 
+    <div class="container">
+        <header>
+            <h1>수업 자료 포트폴리오</h1>
+            <p>환영합니다! 제가 만든 수업 자료 모음입니다.</p>
+        </header>
 
-    <h2><a href='https://script.google.com/macros/s/AKfycbwiEF20VuQUO5skW0k8xxUeFcAJ5hB7man_nmaVk0WmrRsedCnYRrj7AyzN3vQ9ufR6FQ/exec' target="new">우리반 자리배치 PRO</a></h2>
-    <h2><a href='https://script.google.com/macros/s/AKfycbzNV_LunsCFZmkpTK6LzwdlHk0t96LYM2NrLl_ou_Szo1g52FYZg2mCXgCnJYfR3illpQ/exec' target="new">우리반 자리배치 V2</a></h2>
-    <h2><a href='https://script.google.com/macros/s/AKfycbxPVpDafvcIQl4D2QVwlq3uVN8LHUlRlwOPCh30Fp1emK2MgrypTWtAXdkVPJFNxfty/exec' target="new">우리반 자리배치</a></h2>
-    <br>
-    <h2><a href='./PresenterPickerPro'>발표자 뽑기 PRO</a></h2>
-    <h2><a href='./PresenterPickerV2'>발표자 뽑기 V2</a></h2>
-    <h2><a href='./PresenterPicker'>발표자 뽑기</a></h2>
-    <br>
-    <h2><a href='01_wishlist.html'>동아리 WishList</a></h2>
-    <h2><a href='02_profile.html'>써니의 링크트리</a></h2>
-    <h2><a href='03_javascript.html'>자바스크립트</a></h2>
-    <h2><a href='04_four.html'>인생네컷</a></h2>
-    <h2><a href='05_jquery.html'>jQuery</a></h2>
-    <h2><a href='06_fetch_q1.html'>서울시 미세먼지</a></h2>
-    <h2><a href='06_fetch_q2.html'>서울시 따릉이</a></h2>
+        <section>
+            <h2 class="section-title">바이브코딩</h2>
+            <div class="grid-container">
+                <a href='https://script.google.com/macros/s/AKfycbwiEF20VuQUO5skW0k8xxUeFcAJ5hB7man_nmaVk0WmrRsedCnYRrj7AyzN3vQ9ufR6FQ/exec' target="new" class="card">
+                    <span>우리반 자리배치 PRO</span>
+                </a>
+                <a href='https://script.google.com/macros/s/AKfycbzNV_LunsCFZmkpTK6LzwdlHk0t96LYM2NrLl_ou_Szo1g52FYZg2mCXgCnJYfR3illpQ/exec' target="new" class="card">
+                    <span>우리반 자리배치 V2</span>
+                </a>
+                <a href='https://script.google.com/macros/s/AKfycbxPVpDafvcIQl4D2QVwlq3uVN8LHUlRlwOPCh30Fp1emK2MgrypTWtAXdkVPJFNxfty/exec' target="new" class="card">
+                    <span>우리반 자리배치</span>
+                </a>
+                
+                <a href='./PresenterPickerPro' class="card">
+                    <span>발표자 뽑기 PRO</span>
+                </a>
+                <a href='./PresenterPickerV2' class="card">
+                    <span>발표자 뽑기 V2</span>
+                </a>
+                <a href='./PresenterPicker' class="card">
+                    <span>발표자 뽑기</span>
+                </a>
+            </div>
+        </section>
 
-    <h2><a href='instagram/'>인스타그램</a></h2>
-    <h2><a href='youtube'>유튜브</a></h2>
+        <section>
+            <h2 class="section-title">웹개발</h2>
+            <div class="grid-container">
+                <a href='01_wishlist.html' class="card">
+                    <span>동아리 WishList</span>
+                </a>
+                <a href='02_profile.html' class="card">
+                    <span>써니의 링크트리</span>
+                </a>
+                <a href='03_javascript.html' class="card">
+                    <span>자바스크립트</span>
+                </a>
+                <a href='04_four.html' class="card">
+                    <span>인생네컷</span>
+                </a>
+                <a href='05_jquery.html' class="card">
+                    <span>jQuery</span>
+                </a>
+                <a href='06_fetch_q1.html' class="card">
+                    <span>서울시 미세먼지</span>
+                </a>
+                <a href='06_fetch_q2.html' class="card">
+                    <span>서울시 따릉이</span>
+                </a>
+                <a href='instagram/' class="card">
+                    <span>인스타그램</span>
+                </a>
+                <a href='youtube' class="card">
+                    <span>유튜브</span>
+                </a>
+            </div>
+        </section>
+    </div>
+
 </body>
-
 </html>
