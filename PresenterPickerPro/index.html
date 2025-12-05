@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Presenter Picker Ultimate</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- 1. Variables & Theme --- */
+        :root {
+            /* Dynamic Palette (JS can change these) */
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --accent: #f43f5e;
+            --success: #10b981;
+            --warning: #f59e0b;
+            
+            /* Theme Defaults */
+            --bg-body: #f3f4f6;
+            --bg-surface: #ffffff;
+            --bg-panel: #ffffff;
+            --text-main: #111827;
+            --text-sub: #6b7280;
+            --border: #e5e7eb;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --hero-gradient: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            --font-main: 'Pretendard', system-ui, -apple-system, sans-serif;
+        }
+
+        body.dark-mode {
+            --bg-body: #0f172a;
+            --bg-surface: #1e293b;
+            --bg-panel: #1e293b;
+            --text-main: #f3f4f6;
+            --text-sub: #9ca3af;
+            --border: #374151;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            --hero-gradient: linear-gradient(135deg, #312e81 0%, #4c1d95 100%);
+        }
+
+        /* --- 2. Base Reset & Layout --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-main); transition: background-color 0.3s, color 0.3s, border-color 0.3s, transform 0.2s; }
+        
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            background-image: radial-gradient(var(--text-sub) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        body.dark-mode { background-image: radial-gradient(#374151 1px, transparent 1px); }
+
+        /* --- 3. Confetti Canvas --- */
+        #confetti-canvas {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 1000;
+        }
+
+        /* --- 4. Hero Section --- */
+        .hero {
+            background: var(--hero-gradient);
+            color: white;
+            padding: 3rem 1.5rem 4rem;
+            text-align: center;
+            border-bottom-left-radius: 3rem;
+            border-bottom-right-radius: 3rem;
+            box-shadow: var(--shadow);
+            position: relative;
+            z-index: 10;
+        }
+
+        .header-controls {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            display: flex;
+            gap: 10px;
+        }
+
+        .icon-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+        .icon-btn:hover { background: rgba(255,255,255,0.3); transform: scale(1.1); }
+
+        .hero h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .hero p { opacity: 0.9; font-size: 1.1rem; }
+
+        /* --- 5. Main Container --- */
+        .container {
+            max-width: 800px;
+            margin: -3rem auto 2rem;
+            padding: 0 1.5rem;
+            position: relative;
+            z-index: 20;
+            width: 100%;
+        }
+
+        .app-card {
+            background: var(--bg-surface);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            border: 1px solid var(--border);
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* --- 6. Input Area --- */
+        .input-wrapper {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 2rem;
+            background: var(--bg-body);
+            padding: 6px;
+            border-radius: 16px;
+            border: 2px solid transparent;
+        }
+        .input-wrapper:focus-within { border-color: var(--primary); }
+        .input-wrapper input {
+            flex: 1; border: none; background: transparent;
+            padding: 12px 16px; font-size: 1rem; color: var(--text-main); outline: none;
+        }
+
+        .btn-add {
+            background: var(--primary); color: white; border: none; padding: 0 24px;
+            border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;
+        }
+        .btn-add:hover { background: var(--primary-dark); }
+
+        /* --- 7. Result Stage --- */
+        .stage-area {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+            border: 2px dashed var(--primary);
+            border-radius: 20px;
+            height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .result-display { font-size: 2.5rem; font-weight: 900; color: var(--text-sub); opacity: 0.5; }
+        .result-display.active { color: var(--text-main); opacity: 1; }
+        .result-display.winner {
+            color: var(--primary); font-size: 3.5rem;
+            text-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            animation: winnerPop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* --- 8. Participant Grid (Draggable) --- */
+        .participant-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 2rem;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 4px;
+        }
+        .participant-grid::-webkit-scrollbar { width: 6px; }
+        .participant-grid::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 3px; }
+
+        .card-item {
+            background: var(--bg-body);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            cursor: grab;
+            animation: fadeIn 0.3s ease;
+            user-select: none;
+        }
+        .card-item:active { cursor: grabbing; transform: scale(1.02); z-index: 10; box-shadow: var(--shadow); }
+        .card-item.excluded { opacity: 0.5; filter: grayscale(1); border-style: dashed; }
+        
+        /* Dragging visual */
+        .card-item.dragging { opacity: 0.4; border: 2px dashed var(--primary); }
+
+        .card-avatar {
+            width: 40px; height: 40px;
+            background: #e0e7ff; color: var(--primary);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+            position: relative;
+        }
+        .badge-win {
+            position: absolute; top: -5px; right: -5px;
+            background: var(--warning); color: white;
+            font-size: 0.7rem; padding: 2px 6px; border-radius: 10px; font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        body.dark-mode .card-avatar { background: #312e81; color: #a5b4fc; }
+        .card-name { font-weight: 600; font-size: 0.95rem; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .btn-delete-card {
+            position: absolute; top: 4px; right: 4px;
+            width: 24px; height: 24px; border-radius: 50%; border: none;
+            background: transparent; color: var(--text-sub); cursor: pointer; opacity: 0;
+        }
+        .card-item:hover .btn-delete-card { opacity: 1; }
+        .btn-delete-card:hover { background: var(--accent); color: white; }
+
+        /* --- 9. CTA Button --- */
+        .btn-cta {
+            width: 100%; padding: 1.2rem;
+            background: var(--hero-gradient); color: white; border: none; border-radius: 16px;
+            font-size: 1.3rem; font-weight: 800; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+            transition: all 0.2s;
+        }
+        .btn-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5); }
+        .btn-cta:disabled { background: var(--text-sub); cursor: not-allowed; box-shadow: none; opacity: 0.7; }
+
+        /* --- 10. Side Panels (Settings & Stats) --- */
+        .side-panel {
+            position: fixed; top: 0; right: -400px;
+            width: 100%; max-width: 380px; height: 100%;
+            background: var(--bg-panel);
+            box-shadow: -5px 0 25px rgba(0,0,0,0.2);
+            z-index: 200;
+            padding: 2rem;
+            transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow-y: auto;
+            border-left: 1px solid var(--border);
+        }
+        .side-panel.open { right: 0; }
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 150;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+            backdrop-filter: blur(2px);
+        }
+        .overlay.active { opacity: 1; pointer-events: auto; }
+
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .panel-title { font-size: 1.5rem; font-weight: 700; color: var(--text-main); }
+        .btn-close { background: none; border: none; font-size: 1.5rem; color: var(--text-sub); cursor: pointer; }
+
+        /* Panel Sections */
+        .panel-section { margin-bottom: 2rem; }
+        .section-label { font-size: 0.9rem; font-weight: 600; color: var(--text-sub); margin-bottom: 0.8rem; display: block; }
+        
+        /* Stats Styles */
+        .stat-bar-container { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .stat-name { width: 80px; font-size: 0.9rem; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .stat-bar-bg { flex: 1; height: 10px; background: var(--border); border-radius: 5px; overflow: hidden; }
+        .stat-bar-fill { height: 100%; background: var(--primary); border-radius: 5px; width: 0; transition: width 1s ease; }
+        .stat-count { width: 30px; font-size: 0.85rem; font-weight: bold; color: var(--text-sub); }
+        
+        .history-list { list-style: none; border-top: 1px solid var(--border); }
+        .history-item { 
+            padding: 10px 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 0.9rem;
+        }
+        .history-time { color: var(--text-sub); font-size: 0.8rem; }
+
+        /* Settings Styles */
+        .setting-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding: 0.5rem 0; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border); transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        .color-picker-wrapper { display: flex; gap: 10px; }
+        .color-dot { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
+        .color-dot.active { border-color: var(--text-main); transform: scale(1.1); }
+
+        /* --- Toast Notification --- */
+        #toast-container { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 2000; }
+        .toast {
+            background: var(--bg-surface); color: var(--text-main); padding: 12px 20px; border-radius: 12px;
+            box-shadow: var(--shadow); border-left: 5px solid var(--primary); display: flex; align-items: center; gap: 12px;
+            min-width: 250px; animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1); font-weight: 500;
+        }
+
+        /* --- Animation Keyframes --- */
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        @keyframes winnerPop { 0% { transform: scale(0.5); } 50% { transform: scale(1.4); } 70% { transform: scale(0.9); } 100% { transform: scale(1); } }
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOutRight { to { transform: translateX(100%); opacity: 0; } }
+
+        /* --- Mobile Responsive --- */
+        @media (max-width: 600px) {
+            .hero { padding: 2rem 1rem 3rem; }
+            .hero h1 { font-size: 1.8rem; }
+            .side-panel { width: 85%; }
+            .participant-grid { grid-template-columns: repeat(2, 1fr); }
+            .btn-delete-card { opacity: 1; background: rgba(0,0,0,0.05); }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <header class="hero">
+        <div class="header-controls">
+            <button class="icon-btn" onclick="app.togglePanel('stats')" title="통계 및 기록">
+                <i class="fas fa-chart-bar"></i>
+            </button>
+            <button class="icon-btn" onclick="app.togglePanel('settings')" title="설정">
+                <i class="fas fa-cog"></i>
+            </button>
+            <button class="icon-btn" id="themeToggle" title="테마 전환">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+        <h1><i class="fas fa-dice-d20"></i> Pick Master Pro</h1>
+        <p>통계와 커스텀 기능이 포함된 프리미엄 뽑기</p>
+    </header>
+
+    <main class="container">
+        <div class="app-card">
+            <div class="input-wrapper">
+                <input type="text" id="nameInput" placeholder="이름 입력 (Enter)" autocomplete="off">
+                <button class="btn-add" onclick="app.addParticipant()">
+                    <i class="fas fa-plus"></i> 추가
+                </button>
+            </div>
+
+            <div class="stage-area">
+                <div id="resultDisplay" class="result-display">Ready</div>
+            </div>
+
+            <div class="participant-header" style="display:flex; justify-content:space-between; margin-bottom:10px; color:var(--text-sub); font-size:0.9rem;">
+                <span>참가자 (<span id="count">0</span>) <i class="fas fa-sort text-xs ml-1"></i></span>
+                <span id="excludeBadge" style="display:none; color:var(--accent); font-size:0.8rem;"><i class="fas fa-user-slash"></i> 제외 모드 ON</span>
+            </div>
+            
+            <div id="participantGrid" class="participant-grid">
+                <!-- Cards will be injected here -->
+            </div>
+
+            <button id="pickBtn" class="btn-cta" onclick="app.startPick()">
+                <i class="fas fa-play"></i> START PICK
+            </button>
+        </div>
+    </main>
+
+    <!-- Side Panels Overlay -->
+    <div id="overlay" class="overlay" onclick="app.closePanels()"></div>
+
+    <!-- Stats Panel -->
+    <aside id="panel-stats" class="side-panel">
+        <div class="panel-header">
+            <div class="panel-title">데이터 센터</div>
+            <button class="btn-close" onclick="app.closePanels()"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div class="panel-section">
+            <label class="section-label">🏆 최다 당첨 랭킹</label>
+            <div id="statsChart">
+                <!-- Bars injected here -->
+                <p style="color:var(--text-sub); font-size:0.9rem;">데이터가 없습니다.</p>
+            </div>
+        </div>
+
+        <div class="panel-section">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <label class="section-label" style="margin:0;">📜 최근 활동 기록</label>
+                <button onclick="app.resetData()" style="color:var(--accent); background:none; border:none; cursor:pointer; font-size:0.8rem;">
+                    <i class="fas fa-trash"></i> 초기화
+                </button>
+            </div>
+            <ul id="historyList" class="history-list" style="margin-top:10px;">
+                <!-- History injected here -->
+            </ul>
+        </div>
+    </aside>
+
+    <!-- Settings Panel -->
+    <aside id="panel-settings" class="side-panel">
+        <div class="panel-header">
+            <div class="panel-title">환경 설정</div>
+            <button class="btn-close" onclick="app.closePanels()"><i class="fas fa-times"></i></button>
+        </div>
+
+        <div class="panel-section">
+            <label class="section-label">🎨 메인 컬러 테마</label>
+            <div class="color-picker-wrapper" id="colorPicker">
+                <!-- Color dots -->
+            </div>
+        </div>
+
+        <div class="panel-section">
+            <label class="section-label">⚙️ 게임 플레이</label>
+            
+            <div class="setting-row">
+                <span>당첨자 자동 제외</span>
+                <label class="switch">
+                    <input type="checkbox" id="settingExclude">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="setting-row">
+                <span>사운드 효과</span>
+                <label class="switch">
+                    <input type="checkbox" id="settingSound" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="setting-row">
+                <span>애니메이션 속도</span>
+                <select id="settingSpeed" style="padding:4px; border-radius:4px; border:1px solid var(--border);">
+                    <option value="fast">빠름 (3초)</option>
+                    <option value="normal" selected>보통 (5초)</option>
+                    <option value="slow">긴장감 (8초)</option>
+                </select>
+            </div>
+        </div>
+    </aside>
+
+    <div id="toast-container"></div>
+
+    <script>
+        /**
+         * SoundSynthesizer: Web Audio API
+         */
+        class SoundSynthesizer {
+            constructor() {
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                this.enabled = true;
+            }
+
+            playTone(freq, type, duration, volume = 0.1) {
+                if (!this.enabled) return;
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                
+                gain.gain.setValueAtTime(volume, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + duration);
+            }
+
+            playClick() { this.playTone(800, 'sine', 0.1, 0.05); }
+            playAdd() { 
+                this.playTone(600, 'sine', 0.1, 0.05);
+                setTimeout(() => this.playTone(1000, 'sine', 0.1, 0.05), 50);
+            }
+            playDelete() { this.playTone(300, 'square', 0.1, 0.05); }
+            playRoll() { this.playTone(1200, 'triangle', 0.05, 0.03); }
+            playWin() {
+                if (!this.enabled) return;
+                const now = this.ctx.currentTime;
+                const notes = [523.25, 659.25, 783.99, 1046.50, 783.99, 1046.50]; // C Major
+                notes.forEach((freq, i) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.frequency.value = freq; osc.type = 'triangle';
+                    gain.gain.setValueAtTime(0, now + i*0.1);
+                    gain.gain.linearRampToValueAtTime(0.15, now + i*0.1 + 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + i*0.1 + 0.5);
+                    osc.connect(gain); gain.connect(this.ctx.destination);
+                    osc.start(now + i*0.1); osc.stop(now + i*0.1 + 0.6);
+                });
+            }
+        }
+
+        /**
+         * App Logic
+         */
+        const app = {
+            // Data Structure
+            participants: [], // { id, name, wins, active }
+            history: [],      // { date, winner }
+            settings: {
+                color: '#6366f1',
+                excludeAfterWin: false,
+                sound: true,
+                speed: 'normal', // fast(3s), normal(5s), slow(8s)
+                theme: 'light'
+            },
+            
+            isRolling: false,
+            audio: new SoundSynthesizer(),
+            dragSrcEl: null,
+            
+            init() {
+                this.loadData();
+                this.cacheDOM();
+                this.bindEvents();
+                this.applySettings();
+                this.render();
+                this.resizeCanvas();
+            },
+
+            loadData() {
+                const saved = localStorage.getItem('pickMasterData');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    this.participants = parsed.participants || [];
+                    this.history = parsed.history || [];
+                    this.settings = { ...this.settings, ...parsed.settings };
+                }
+            },
+
+            saveData() {
+                localStorage.setItem('pickMasterData', JSON.stringify({
+                    participants: this.participants,
+                    history: this.history,
+                    settings: this.settings
+                }));
+            },
+
+            cacheDOM() {
+                this.dom = {
+                    input: document.getElementById('nameInput'),
+                    grid: document.getElementById('participantGrid'),
+                    count: document.getElementById('count'),
+                    result: document.getElementById('resultDisplay'),
+                    btn: document.getElementById('pickBtn'),
+                    toastContainer: document.getElementById('toast-container'),
+                    themeToggle: document.getElementById('themeToggle'),
+                    canvas: document.getElementById('confetti-canvas'),
+                    ctx: document.getElementById('confetti-canvas').getContext('2d'),
+                    overlay: document.getElementById('overlay'),
+                    panels: {
+                        stats: document.getElementById('panel-stats'),
+                        settings: document.getElementById('panel-settings')
+                    },
+                    statsChart: document.getElementById('statsChart'),
+                    historyList: document.getElementById('historyList'),
+                    excludeBadge: document.getElementById('excludeBadge'),
+                    
+                    // Inputs
+                    settingExclude: document.getElementById('settingExclude'),
+                    settingSound: document.getElementById('settingSound'),
+                    settingSpeed: document.getElementById('settingSpeed'),
+                    colorPicker: document.getElementById('colorPicker')
+                };
+            },
+
+            bindEvents() {
+                // Main Input
+                this.dom.input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.addParticipant();
+                });
+                
+                // Theme Toggle
+                this.dom.themeToggle.addEventListener('click', () => {
+                    this.settings.theme = this.settings.theme === 'light' ? 'dark' : 'light';
+                    this.applyTheme();
+                    this.saveData();
+                    this.audio.playClick();
+                });
+
+                // Resize
+                window.addEventListener('resize', () => this.resizeCanvas());
+
+                // Settings Bindings
+                this.dom.settingExclude.addEventListener('change', (e) => {
+                    this.settings.excludeAfterWin = e.target.checked;
+                    this.dom.excludeBadge.style.display = e.target.checked ? 'block' : 'none';
+                    this.saveData();
+                    this.render(); // Update visuals (grayscale excluded ones)
+                });
+                
+                this.dom.settingSound.addEventListener('change', (e) => {
+                    this.settings.sound = e.target.checked;
+                    this.audio.enabled = e.target.checked;
+                    this.saveData();
+                });
+
+                this.dom.settingSpeed.addEventListener('change', (e) => {
+                    this.settings.speed = e.target.value;
+                    this.saveData();
+                });
+
+                // Render Color Picker
+                const colors = ['#6366f1', '#ec4899', '#10b981', '#f59e0b', '#3b82f6', '#8b5cf6'];
+                this.dom.colorPicker.innerHTML = colors.map(c => 
+                    `<div class="color-dot" style="background:${c}" onclick="app.changeColor('${c}')"></div>`
+                ).join('');
+            },
+
+            applySettings() {
+                // Apply Theme
+                this.applyTheme();
+                
+                // Apply Color
+                document.documentElement.style.setProperty('--primary', this.settings.color);
+                
+                // Apply Inputs
+                this.dom.settingExclude.checked = this.settings.excludeAfterWin;
+                this.dom.settingSound.checked = this.settings.sound;
+                this.dom.settingSpeed.value = this.settings.speed;
+                
+                // Audio
+                this.audio.enabled = this.settings.sound;
+
+                // Badge
+                this.dom.excludeBadge.style.display = this.settings.excludeAfterWin ? 'block' : 'none';
+            },
+
+            applyTheme() {
+                if (this.settings.theme === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    this.dom.themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    this.dom.themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                }
+            },
+
+            changeColor(color) {
+                this.settings.color = color;
+                document.documentElement.style.setProperty('--primary', color);
+                // Also update gradient based on new primary
+                document.documentElement.style.setProperty('--hero-gradient', `linear-gradient(135deg, ${color} 0%, ${this.shadeColor(color, -20)} 100%)`);
+                this.saveData();
+                this.audio.playClick();
+            },
+            
+            // Helper to darken color for gradient
+            shadeColor(color, percent) {
+                let R = parseInt(color.substring(1,3),16);
+                let G = parseInt(color.substring(3,5),16);
+                let B = parseInt(color.substring(5,7),16);
+                R = parseInt(R * (100 + percent) / 100);
+                G = parseInt(G * (100 + percent) / 100);
+                B = parseInt(B * (100 + percent) / 100);
+                R = (R<255)?R:255;  G = (G<255)?G:255;  B = (B<255)?B:255; 
+                var RR = ((R.toString(16).length==1)?"0"+R.toString(16):R.toString(16));
+                var GG = ((G.toString(16).length==1)?"0"+G.toString(16):G.toString(16));
+                var BB = ((B.toString(16).length==1)?"0"+B.toString(16):B.toString(16));
+                return "#"+RR+GG+BB;
+            },
+
+            // --- Participant Logic ---
+
+            addParticipant() {
+                const name = this.dom.input.value.trim();
+                if (!name) return this.showToast('이름을 입력해주세요!', 'error');
+                
+                this.participants.push({
+                    id: Date.now(),
+                    name: name,
+                    wins: 0,
+                    active: true
+                });
+                
+                this.dom.input.value = '';
+                this.dom.input.focus();
+                this.audio.playAdd();
+                this.saveData();
+                this.render();
+                this.showToast(`${name}님이 추가되었습니다.`);
+            },
+
+            deleteParticipant(id) {
+                if (this.isRolling) return;
+                const idx = this.participants.findIndex(p => p.id === id);
+                if (idx > -1) {
+                    const removed = this.participants[idx].name;
+                    this.participants.splice(idx, 1);
+                    this.saveData();
+                    this.render();
+                    this.audio.playDelete();
+                    this.showToast(`${removed} 삭제됨`, 'error');
+                }
+            },
+
+            resetData() {
+                if(!confirm('모든 기록과 통계가 삭제됩니다. 계속하시겠습니까?')) return;
+                this.participants.forEach(p => { p.wins = 0; p.active = true; });
+                this.history = [];
+                this.saveData();
+                this.render();
+                this.renderStats();
+                this.showToast('데이터가 초기화되었습니다.');
+            },
+
+            // --- Drag & Drop ---
+            handleDragStart(e) {
+                this.dragSrcEl = e.target.closest('.card-item');
+                this.dragSrcEl.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/html', this.dragSrcEl.outerHTML);
+                e.dataTransfer.setData('text/plain', this.dragSrcEl.dataset.index);
+            },
+            handleDragOver(e) {
+                if (e.preventDefault) e.preventDefault();
+                return false;
+            },
+            handleDrop(e) {
+                e.stopPropagation();
+                const targetEl = e.target.closest('.card-item');
+                if (this.dragSrcEl !== targetEl && targetEl) {
+                    const fromIdx = parseInt(this.dragSrcEl.dataset.index);
+                    const toIdx = parseInt(targetEl.dataset.index);
+                    
+                    // Array Move
+                    const element = this.participants[fromIdx];
+                    this.participants.splice(fromIdx, 1);
+                    this.participants.splice(toIdx, 0, element);
+                    
+                    this.saveData();
+                    this.render();
+                }
+                return false;
+            },
+            handleDragEnd(e) {
+                this.dom.grid.querySelectorAll('.card-item').forEach(col => col.classList.remove('dragging'));
+            },
+
+            render() {
+                this.dom.grid.innerHTML = '';
+                
+                this.participants.forEach((p, index) => {
+                    const card = document.createElement('div');
+                    card.className = `card-item ${!p.active && this.settings.excludeAfterWin ? 'excluded' : ''}`;
+                    card.draggable = true;
+                    card.dataset.index = index; // for DnD
+                    
+                    // Drag Events
+                    card.addEventListener('dragstart', this.handleDragStart.bind(this));
+                    card.addEventListener('dragover', this.handleDragOver.bind(this));
+                    card.addEventListener('drop', this.handleDrop.bind(this));
+                    card.addEventListener('dragend', this.handleDragEnd.bind(this));
+                    
+                    const icons = ['fa-user', 'fa-user-astronaut', 'fa-user-ninja', 'fa-user-tie', 'fa-smile'];
+                    const icon = icons[index % icons.length];
+                    
+                    const badge = p.wins > 0 ? `<div class="badge-win">${p.wins}승</div>` : '';
+                    
+                    card.innerHTML = `
+                        <div class="card-avatar">
+                            <i class="fas ${icon}"></i>
+                            ${badge}
+                        </div>
+                        <div class="card-name">${p.name}</div>
+                        <button class="btn-delete-card" onclick="app.deleteParticipant(${p.id})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    this.dom.grid.appendChild(card);
+                });
+                
+                this.dom.count.textContent = this.participants.length;
+
+                // Reset stage text if empty
+                if (!this.isRolling && this.participants.length === 0) {
+                    this.dom.result.textContent = 'Ready';
+                    this.dom.result.className = 'result-display';
+                }
+            },
+
+            // --- Pick Logic ---
+
+            startPick() {
+                // Filter candidates based on Exclude Mode
+                const candidates = this.settings.excludeAfterWin 
+                    ? this.participants.filter(p => p.active) 
+                    : this.participants;
+
+                if (candidates.length < 1) {
+                    this.showToast('추첨할 대상이 없습니다.', 'error');
+                    this.audio.playDelete();
+                    return;
+                }
+                if (this.isRolling) return;
+
+                this.isRolling = true;
+                this.dom.btn.disabled = true;
+                this.dom.btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 추첨 중...';
+                this.dom.result.classList.remove('winner');
+                this.dom.result.classList.add('active');
+
+                // Determine duration based on speed setting
+                const durations = { fast: 3000, normal: 5000, slow: 8000 };
+                const totalDuration = durations[this.settings.speed] || 5000;
+                
+                let startTime = null;
+
+                const animate = (timestamp) => {
+                    if (!startTime) startTime = timestamp;
+                    const progress = timestamp - startTime;
+                    
+                    // Change name every ~80ms
+                    if (Math.floor(progress / 80) % 2 === 0) {
+                        const randomName = candidates[Math.floor(Math.random() * candidates.length)].name;
+                        this.dom.result.textContent = randomName;
+                        if(progress < totalDuration - 500) this.audio.playRoll(); 
+                    }
+
+                    if (progress < totalDuration) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        this.finalizePick(candidates);
+                    }
+                };
+                requestAnimationFrame(animate);
+            },
+
+            finalizePick(candidates) {
+                const winnerIndex = Math.floor(Math.random() * candidates.length);
+                const winner = candidates[winnerIndex];
+                
+                // Update State
+                const realIndex = this.participants.findIndex(p => p.id === winner.id);
+                if (realIndex > -1) {
+                    this.participants[realIndex].wins++;
+                    if (this.settings.excludeAfterWin) {
+                        this.participants[realIndex].active = false;
+                    }
+                }
+
+                // Add History
+                this.history.unshift({
+                    date: new Date().toLocaleString(),
+                    winnerName: winner.name,
+                    winnerId: winner.id
+                });
+                
+                this.saveData();
+                this.render(); // Update grid (badges & exclude status)
+
+                // UI Effects
+                this.dom.result.textContent = winner.name;
+                this.dom.result.classList.add('winner');
+                this.audio.playWin();
+                this.fireConfetti();
+                this.showToast(`🎉 ${winner.name}님 당첨 축하합니다!`, 'success');
+
+                this.isRolling = false;
+                this.dom.btn.disabled = false;
+                this.dom.btn.innerHTML = '<i class="fas fa-redo"></i> 다시 뽑기';
+            },
+
+            // --- Stats & History UI ---
+
+            renderStats() {
+                // Render Chart
+                const sorted = [...this.participants].sort((a,b) => b.wins - a.wins).filter(p => p.wins > 0).slice(0, 5);
+                const maxWin = sorted.length > 0 ? sorted[0].wins : 1;
+
+                if (sorted.length === 0) {
+                    this.dom.statsChart.innerHTML = '<p style="color:var(--text-sub); text-align:center; padding:20px;">아직 당첨 기록이 없습니다.</p>';
+                } else {
+                    this.dom.statsChart.innerHTML = sorted.map(p => {
+                        const width = (p.wins / maxWin) * 100;
+                        return `
+                            <div class="stat-bar-container">
+                                <div class="stat-name">${p.name}</div>
+                                <div class="stat-bar-bg">
+                                    <div class="stat-bar-fill" style="width: ${width}%"></div>
+                                </div>
+                                <div class="stat-count">${p.wins}</div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+
+                // Render History
+                if (this.history.length === 0) {
+                    this.dom.historyList.innerHTML = '<li class="history-item" style="justify-content:center;">기록 없음</li>';
+                } else {
+                    this.dom.historyList.innerHTML = this.history.map(h => `
+                        <li class="history-item">
+                            <span><i class="fas fa-trophy" style="color:#fbbf24; margin-right:5px;"></i> ${h.winnerName}</span>
+                            <span class="history-time">${h.date.slice(5, 16)}</span>
+                        </li>
+                    `).join('');
+                }
+            },
+
+            // --- Panel Management ---
+            togglePanel(id) {
+                this.renderStats(); // Refresh stats when opening
+                this.dom.overlay.classList.add('active');
+                this.dom.panels[id].classList.add('open');
+                this.audio.playClick();
+            },
+            closePanels() {
+                this.dom.overlay.classList.remove('active');
+                Object.values(this.dom.panels).forEach(p => p.classList.remove('open'));
+            },
+
+            // --- Utilities ---
+            showToast(msg, type = 'success') {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+                toast.innerHTML = `<i class="fas ${icon}"></i> <span>${msg}</span>`;
+                this.dom.toastContainer.appendChild(toast);
+                setTimeout(() => {
+                    toast.style.animation = 'fadeOutRight 0.3s forwards';
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            },
+            resizeCanvas() {
+                this.dom.canvas.width = window.innerWidth;
+                this.dom.canvas.height = window.innerHeight;
+            },
+            fireConfetti() {
+                const particles = [];
+                const colors = [this.settings.color, '#f43f5e', '#10b981', '#fbbf24', '#8b5cf6'];
+                for (let i = 0; i < 150; i++) {
+                    particles.push({
+                        x: window.innerWidth / 2, y: window.innerHeight / 2,
+                        vx: (Math.random() - 0.5) * 20, vy: (Math.random() - 0.5) * 20 - 5,
+                        life: 1, color: colors[Math.floor(Math.random() * colors.length)], size: Math.random() * 8 + 4
+                    });
+                }
+                const animate = () => {
+                    this.dom.ctx.clearRect(0, 0, this.dom.canvas.width, this.dom.canvas.height);
+                    let active = false;
+                    particles.forEach(p => {
+                        if (p.life > 0) {
+                            p.x += p.vx; p.y += p.vy; p.vy += 0.3; p.vx *= 0.95; p.life -= 0.01;
+                            this.dom.ctx.globalAlpha = p.life; this.dom.ctx.fillStyle = p.color;
+                            this.dom.ctx.beginPath(); this.dom.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                            this.dom.ctx.fill(); active = true;
+                        }
+                    });
+                    if (active) requestAnimationFrame(animate);
+                    else this.dom.ctx.clearRect(0, 0, this.dom.canvas.width, this.dom.canvas.height);
+                };
+                animate();
+            }
+        };
+
+        // Initialize
+        app.init();
+    </script>
+</body>
+</html>
