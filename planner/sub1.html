@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ko" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>갓생 플래너 - 집중 타이머 (sub1.html)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome (아이콘 라이브러리) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 구글 웹 폰트 -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-full flex flex-col">
+
+    <!-- -->
+    <!-- 📢 실시간 상태 메시지 토스트 알림창 (alert 방지용 커스텀 알림) -->
+    <div id="toastNotification" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs md:text-sm font-semibold px-6 py-3 rounded-full shadow-lg z-50 flex items-center gap-2 opacity-0 pointer-events-none transition-all duration-300">
+        <i class="fa-solid fa-circle-info text-indigo-400"></i>
+        <span id="toastMsg">집중 타이머 화면에 오신 것을 환영합니다!</span>
+    </div>
+
+    <!-- -->
+    <!-- 🌐 네비게이션 헤더 -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
+            
+            <!-- 서비스 브랜드 로고 -->
+            <a href="index.html" class="flex items-center gap-2 text-indigo-600 font-black text-xl tracking-tight">
+                <i class="fa-solid fa-fire text-2xl animate-pulse text-indigo-500"></i>
+                <span>갓생 플래너<span class="text-xs font-semibold text-slate-400 ml-1.5">v1.3</span></span>
+            </a>
+            
+            <!-- 🔗 [교육 포인트] 동일 폴더 내의 index.html, sub1.html, sub2.html 간 링크 이동 가이드 -->
+            <nav class="flex gap-1 md:gap-2">
+                <a href="index.html" class="px-3 py-2 text-sm font-bold rounded-xl text-slate-500 hover:bg-slate-100 transition-all">
+                    <i class="fa-solid fa-house mr-1"></i> 메인 홈
+                </a>
+                <a href="sub1.html" class="px-3 py-2 text-sm font-bold rounded-xl text-indigo-600 bg-indigo-50 transition-all">
+                    <i class="fa-solid fa-stopwatch mr-1"></i> 집중 타이머
+                </a>
+                <a href="sub2.html" class="px-3 py-2 text-sm font-bold rounded-xl text-slate-500 hover:bg-slate-100 transition-all">
+                    <i class="fa-solid fa-circle-check mr-1"></i> 습관 & 일기
+                </a>
+            </nav>
+
+        </div>
+    </header>
+
+    <!-- -->
+    <!-- 📦 메인 콘텐츠 영역 -->
+    <main class="flex-grow max-w-5xl w-full mx-auto px-4 py-8 space-y-6">
+
+        <!-- 뒤로가기 보조 바 -->
+        <div>
+            <a href="index.html" class="text-sm text-slate-400 hover:text-indigo-600 font-bold inline-flex items-center gap-1.5 transition-colors">
+                <i class="fa-solid fa-arrow-left"></i> 홈으로 돌아가기
+            </a>
+        </div>
+
+        <!-- 2열 반응형 그리드 배치 (좌측: 타이머 모듈 / 우측: 통계 및 환경 설정) -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+            
+            <!-- -->
+            <!-- 🎯 [구역 A] 뽀모도로 타이머 메인 모듈 -->
+            <div class="md:col-span-3 bg-white border border-slate-200 rounded-3xl p-8 shadow-sm flex flex-col items-center justify-center text-center">
+                
+                <!-- 집중 vs 휴식 모드 선택 토글 스위치 -->
+                <div class="flex bg-slate-100 p-1.5 rounded-2xl mb-8 gap-1">
+                    <button id="modeStudy" class="px-5 py-2 text-xs font-bold rounded-xl bg-white text-indigo-600 shadow-sm transition-all">
+                        🎯 공부 집중 (25분)
+                    </button>
+                    <button id="modeBreak" class="px-5 py-2 text-xs font-bold rounded-xl text-slate-500 hover:bg-white/50 transition-all">
+                        ☕ 달콤한 휴식 (5분)
+                    </button>
+                </div>
+
+                <!-- 원형 시간 시각화 서클 (SVG 와이어프레임 기법 활용) -->
+                <div class="relative w-64 h-64 flex items-center justify-center mb-8">
+                    <svg class="absolute inset-0 w-full h-full transform -rotate-90">
+                        <circle cx="128" cy="128" r="115" stroke-width="7" stroke="currentColor" class="text-slate-100 transition-colors" fill="transparent" />
+                        <circle cx="128" cy="128" r="115" stroke-width="7" stroke="currentColor" class="text-indigo-600 transition-all duration-300" fill="transparent"
+                                stroke-dasharray="722.5" stroke-dashoffset="0" stroke-linecap="round" id="timerProgressCircle" />
+                    </svg>
+                    
+                    <div class="z-10 space-y-1">
+                        <span class="text-4xl md:text-5xl font-black text-slate-800 tracking-tight" id="timeRemaining">25:00</span>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest block" id="currentModeLabel">Focusing...</span>
+                    </div>
+                </div>
+
+                <!-- 타이머 플레이 컨트롤러 버튼 그룹 -->
+                <div class="flex gap-3 w-full max-w-sm">
+                    <button id="timerToggle" class="flex-grow bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-4 px-6 rounded-2xl shadow-md transition-all flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-play" id="playIcon"></i> <span id="timerActionText">집중 시작</span>
+                    </button>
+                    <button id="timerReset" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold p-4 rounded-2xl transition-all" title="타이머 리셋">
+                        <i class="fa-solid fa-arrow-rotate-left"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- -->
+            <!-- 📊 [우측 구역 B & C] 집중 기록 통계 및 수동 세팅 보드 -->
+            <div class="md:col-span-2 space-y-6">
+                
+                <!-- [구역 B] 누적 집중 기록 카드 -->
+                <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+                    <h4 class="font-bold text-slate-800 text-sm border-b border-slate-100 pb-3 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-indigo-500"></i>
+                        오늘 누적 집중 현황
+                    </h4>
+                    <div class="grid grid-cols-2 gap-3 text-center mb-4">
+                        <div class="bg-slate-50 p-4 rounded-2xl">
+                            <span class="text-[10px] text-slate-400 font-bold block mb-1">총 집중 횟수</span>
+                            <span class="text-2xl font-black text-indigo-600" id="completedCount">0회</span>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-2xl">
+                            <span class="text-[10px] text-slate-400 font-bold block mb-1">누적 집중 시간</span>
+                            <span class="text-2xl font-black text-slate-800" id="accumulatedTime">0분</span>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-400 leading-relaxed text-center">타이머 공부 집중을 완료하면 횟수와 집중 시간이 실시간 집계되어 로컬 저장소에 보존됩니다.</p>
+                </div>
+
+                <!-- [구역 C] 수동 집중 분량 설정 도구 -->
+                <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+                    <h4 class="font-bold text-slate-800 text-sm border-b border-slate-100 pb-3 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-indigo-500"></i>
+                        집중 목표 세부 설정
+                    </h4>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-400 block mb-1">원하는 공부 집중 시간(단위: 분)</label>
+                            <div class="flex gap-2">
+                                <input type="number" id="customMin" min="1" max="120" value="25" 
+                                       class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-50 text-slate-800">
+                                <button id="setCustomTime" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 rounded-xl transition-colors whitespace-nowrap">적용</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- -->
+    <!-- 🏷️ 푸터 영역 -->
+    <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400 mt-12">
+        <div class="max-w-5xl mx-auto px-4 space-y-1">
+            <p class="font-bold text-slate-500">학기말 웹 프로그래밍 프로젝트 가이드 - 하이퍼링크 버전</p>
+            <p>본 템플릿은 HTML <code>&lt;a href="..."&gt;</code> 링크와 LocalStorage 데이터 연동을 실습하는 교육용 교재입니다.</p>
+            <p class="text-[10px] text-slate-300">&copy; 2026 에이블 코딩 교육 연구소. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- ====================================================================
+         JAVASCRIPT CODE: 타이머 인터랙션 제어
+         ==================================================================== -->
+    <script>
+        //        // 1. 상태 변수 및 LocalStorage 메모리 복원
+        let studyCompletedCount = parseInt(localStorage.getItem('multi_page_timer_count')) || 0;
+        let studyAccumulatedMinutes = parseInt(localStorage.getItem('multi_page_timer_time')) || 0;
+
+        let timerInterval = null;
+        let isTimerRunning = false;
+        let timerDuration = 25 * 60; // 초 단위 시간 기본 값 (25분)
+        let timerTimeLeft = timerDuration;
+        let timerMode = "study"; // study (공부) 또는 break (휴식)
+
+        // 원형 진행바 SVG 연산용 상수 (반지름 115의 원둘레 = 약 722.5)
+        const circleLength = 2 * Math.PI * 115;
+
+        // DOM 요소 캐싱
+        const timerRemaining = document.getElementById('timeRemaining');
+        const timerToggleBtn = document.getElementById('timerToggle');
+        const timerResetBtn = document.getElementById('timerReset');
+        const playIcon = document.getElementById('playIcon');
+        const timerActionText = document.getElementById('timerActionText');
+        const modeStudyBtn = document.getElementById('modeStudy');
+        const modeBreakBtn = document.getElementById('modeBreak');
+        const currentModeLabel = document.getElementById('currentModeLabel');
+        const progressCircle = document.getElementById('timerProgressCircle');
+        const completedCountEl = document.getElementById('completedCount');
+        const accumulatedTimeEl = document.getElementById('accumulatedTime');
+        const customMinInput = document.getElementById('customMin');
+        const setCustomTimeBtn = document.getElementById('setCustomTime');
+
+        //        // 2. 타이머 렌더링 화면 갱신 함수
+        function updateTimerUI() {
+            const mins = Math.floor(timerTimeLeft / 60).toString().padStart(2, '0');
+            const secs = (timerTimeLeft % 60).toString().padStart(2, '0');
+            timerRemaining.textContent = `${mins}:${secs}`;
+
+            // 원형 테두리 게이지 수치 실시간 계산 및 갱신
+            const offset = circleLength - (timerTimeLeft / timerDuration) * circleLength;
+            progressCircle.style.strokeDashoffset = offset;
+            
+            // 우측 집중 통계 데이터 매핑
+            completedCountEl.textContent = `${studyCompletedCount}회`;
+            accumulatedTimeEl.textContent = `${studyAccumulatedMinutes}분`;
+        }
+
+        //        // 3. 타이머 작동 및 제어 엔진
+        function startTimer() {
+            if (isTimerRunning) return;
+            
+            isTimerRunning = true;
+            playIcon.className = "fa-solid fa-pause";
+            timerActionText.textContent = "일시 정지";
+            
+            timerInterval = setInterval(() => {
+                if (timerTimeLeft > 0) {
+                    timerTimeLeft--;
+                    updateTimerUI();
+                } else {
+                    // 타이머 시간 종료 시점 분기 처리
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    isTimerRunning = false;
+                    playIcon.className = "fa-solid fa-play";
+                    timerActionText.textContent = "집중 시작";
+                    handleTimerCompleted();
+                }
+            }, 1000);
+            
+            showToast(`${timerMode === 'study' ? '집중 공부' : '휴식'} 시간을 활성화합니다.`);
+        }
+
+        function pauseTimer() {
+            if (!isTimerRunning) return;
+            clearInterval(timerInterval);
+            timerInterval = null;
+            isTimerRunning = false;
+            playIcon.className = "fa-solid fa-play";
+            timerActionText.textContent = "집중 재개";
+            showToast("타이머 작동이 일시 정지되었습니다.");
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            isTimerRunning = false;
+            playIcon.className = "fa-solid fa-play";
+            timerActionText.textContent = "집중 시작";
+            timerTimeLeft = timerDuration;
+            updateTimerUI();
+            showToast("타이머가 원래 시작 시간으로 리셋되었습니다.");
+        }
+
+        //        // 4. 타이머 완료 이벤트 분기 처리
+        function handleTimerCompleted() {
+            if (timerMode === "study") {
+                studyCompletedCount++;
+                const focusMin = Math.round(timerDuration / 60);
+                studyAccumulatedMinutes += focusMin;
+                
+                // 로컬 스토리지에 최종 합산 저장 (index.html에서 조회 가능)
+                localStorage.setItem('multi_page_timer_count', studyCompletedCount);
+                localStorage.setItem('multi_page_timer_time', studyAccumulatedMinutes);
+                
+                showToast(`축하합니다! ${focusMin}분 동안 최고의 집중을 완수했습니다! 🎉`);
+                switchTimerMode("break");
+            } else {
+                showToast("충분한 휴식이 되셨나요? 다시 신나게 공부해봅시다! 🔥");
+                switchTimerMode("study");
+            }
+            updateTimerUI();
+        }
+
+        // 집중 / 휴식 모드 토글 전환 함수
+        function switchTimerMode(mode) {
+            timerMode = mode;
+            if (mode === "study") {
+                timerDuration = parseInt(customMinInput.value) * 60 || 25 * 60;
+                currentModeLabel.textContent = "Focusing...";
+                currentModeLabel.className = "text-xs font-bold text-slate-400 uppercase tracking-widest block";
+                progressCircle.className = "text-indigo-600";
+                modeStudyBtn.className = "px-5 py-2 text-xs font-bold rounded-xl bg-white text-indigo-600 shadow-sm transition-all";
+                modeBreakBtn.className = "px-5 py-2 text-xs font-bold rounded-xl text-slate-500 hover:bg-white/50 transition-all";
+            } else {
+                timerDuration = 5 * 60; // 휴식은 기본 5분 강제고정
+                currentModeLabel.textContent = "Breaking...";
+                currentModeLabel.className = "text-xs font-bold text-violet-500 uppercase tracking-widest block";
+                progressCircle.className = "text-violet-500";
+                modeStudyBtn.className = "px-5 py-2 text-xs font-bold rounded-xl text-slate-500 hover:bg-white/50 transition-all";
+                modeBreakBtn.className = "px-5 py-2 text-xs font-bold rounded-xl bg-white text-violet-600 shadow-sm transition-all";
+            }
+            timerTimeLeft = timerDuration;
+            resetTimer();
+        }
+
+        //        // 5. 버튼 이벤트 리스너 세팅
+        timerToggleBtn.addEventListener('click', () => {
+            if (isTimerRunning) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        });
+
+        timerResetBtn.addEventListener('click', resetTimer);
+        modeStudyBtn.addEventListener('click', () => switchTimerMode("study"));
+        modeBreakBtn.addEventListener('click', () => switchTimerMode("break"));
+
+        // 수동 분(Minute) 단위 커스텀 설정 적용
+        setCustomTimeBtn.addEventListener('click', () => {
+            const val = parseInt(customMinInput.value);
+            if (val > 0 && val <= 120) {
+                if (timerMode === 'study') {
+                    timerDuration = val * 60;
+                    timerTimeLeft = timerDuration;
+                    resetTimer();
+                    showToast(`공부 목표 시간을 ${val}분으로 보정했습니다.`);
+                } else {
+                    showToast("공부 집중 모드일 때만 커스텀 시간 변경이 적용됩니다.");
+                }
+            } else {
+                showToast("1분부터 120분 범위 내에서만 입력이 가능합니다.");
+            }
+        });
+
+        // 커스텀 토스트 알림 출력 유틸리티
+        function showToast(message) {
+            const toast = document.getElementById('toastNotification');
+            document.getElementById('toastMsg').textContent = message;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            toast.classList.add('opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 2500);
+        }
+
+        // 브라우저 초기 로딩 완료 시점 구동
+        window.onload = function() {
+            updateTimerUI();
+        };
+    </script>
+</body>
+</html>

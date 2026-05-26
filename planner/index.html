@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ko" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>갓생 플래너 - 메인 홈 (index.html)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome (아이콘 라이브러리) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 구글 웹 폰트 -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        /* 할 일 완료 시 취소선 디자인 */
+        .todo-done {
+            text-decoration: line-through;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-full flex flex-col">
+
+    <!-- 📢 실시간 상태 메시지 토스트 알림창 (alert 방지용 커스텀 알림) -->
+    <div id="toastNotification" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs md:text-sm font-semibold px-6 py-3 rounded-full shadow-lg z-50 flex items-center gap-2 opacity-0 pointer-events-none transition-all duration-300">
+        <i class="fa-solid fa-circle-info text-indigo-400"></i>
+        <span id="toastMsg">오늘 하루도 갓생을 시작해 보세요.</span>
+    </div>
+
+    <!-- 🌐 네비게이션 헤더 -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
+            
+            <!-- 서비스 브랜드 로고 -->
+            <a href="index.html" class="flex items-center gap-2 text-indigo-600 font-black text-xl tracking-tight">
+                <i class="fa-solid fa-fire text-2xl animate-pulse text-indigo-500"></i>
+                <span>갓생 플래너<span class="text-xs font-semibold text-slate-400 ml-1.5">v1.3</span></span>
+            </a>
+            
+            <!-- 🔗 [교육 포인트] 실제 HTML 파일명(index.html, sub1.html, sub2.html)으로 링크 연결 -->
+            <nav class="flex gap-1 md:gap-2">
+                <a href="index.html" class="px-3 py-2 text-sm font-bold rounded-xl transition-all text-indigo-600 bg-indigo-50">
+                    <i class="fa-solid fa-house mr-1"></i> 메인 홈
+                </a>
+                <a href="sub1.html" class="px-3 py-2 text-sm font-bold rounded-xl text-slate-500 hover:bg-slate-100 transition-all">
+                    <i class="fa-solid fa-stopwatch mr-1"></i> 집중 타이머
+                </a>
+                <a href="sub2.html" class="px-3 py-2 text-sm font-bold rounded-xl text-slate-500 hover:bg-slate-100 transition-all">
+                    <i class="fa-solid fa-circle-check mr-1"></i> 습관 & 일기
+                </a>
+            </nav>
+
+        </div>
+    </header>
+
+    <!-- 📦 메인 콘텐츠 영역 -->
+    <main class="flex-grow max-w-5xl w-full mx-auto px-4 py-8 space-y-6">
+
+        <!-- 👑 상단 대시보드 배너 (D-Day 및 투두 달성 게이지) -->
+        <div class="bg-gradient-to-r from-indigo-500 to-violet-600 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
+            <div class="absolute right-0 top-0 opacity-10 translate-x-10 -translate-y-6">
+                <i class="fa-solid fa-trophy text-[180px]"></i>
+            </div>
+            <div class="relative z-10 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                <div class="space-y-2">
+                    <span class="bg-white/20 text-xs font-black uppercase tracking-widest px-3 py-1 rounded-full text-white">Let's 갓생</span>
+                    <h2 class="text-2xl md:text-3xl font-black">안녕하세요, 갓생러님! 🔥</h2>
+                    <p class="text-sm text-indigo-100 font-medium">오늘 계획한 목표들을 완벽하게 정복해 봅시다.</p>
+                </div>
+                
+                <!-- D-Day 영역 -->
+                <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 text-center min-w-[150px]">
+                    <span class="text-xs text-indigo-200 font-bold block mb-1">📅 목표일 디데이</span>
+                    <span class="text-2xl font-black block tracking-wider" id="dDayDisplay">D-170</span>
+                    <button onclick="changeDday()" class="text-[10px] text-white/80 underline mt-1 hover:text-white">날짜 설정</button>
+                </div>
+            </div>
+
+            <!-- 투두 실시간 완료율 프로그래스 바 -->
+            <div class="mt-6 pt-5 border-t border-white/10">
+                <div class="flex justify-between items-center text-xs font-semibold text-indigo-100 mb-2">
+                    <span>🏆 오늘의 계획 달성률</span>
+                    <span class="font-bold text-sm text-white" id="progressPercent">0%</span>
+                </div>
+                <div class="w-full bg-black/20 rounded-full h-3 overflow-hidden">
+                    <div id="progressBar" class="bg-white h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 하단 2열 배치 그리드 (왼쪽: 핵심 투두리스트 / 오른쪽: 상세 페이지 바로가기 링크 및 명언) -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+            
+            <!-- 📝 [왼쪽] 오늘의 투두리스트 -->
+            <div class="md:col-span-3 bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-4 mb-4">
+                    <h3 class="text-lg font-black flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-indigo-500"></i>
+                        오늘 꼭 해야 할 일
+                    </h3>
+                    <span class="text-xs text-slate-400 font-medium" id="todoCountLabel">총 0개 남음</span>
+                </div>
+
+                <!-- 신규 할 일 입력 폼 -->
+                <form id="todoForm" class="flex gap-2 mb-4" onsubmit="addTodo(event)">
+                    <input type="text" id="todoInput" placeholder="오늘 공부나 루틴 계획 적기..." required 
+                           class="flex-grow px-4 py-3 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 transition-all">
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-3 rounded-2xl text-sm flex items-center gap-1.5 shadow-md transition-all">
+                        <i class="fa-solid fa-plus"></i> 추가
+                    </button>
+                </form>
+
+                <!-- 투두 아이템 리스트 렌더링 구역 -->
+                <div class="space-y-2 max-h-[300px] overflow-y-auto pr-1" id="todoListContainer">
+                    <!-- 자바스크립트에 의해 동적으로 생성되는 영역 -->
+                </div>
+            </div>
+
+            <!-- 🧭 [오른쪽] 상세 페이지 연결 링크 및 랜덤 명언 -->
+            <div class="md:col-span-2 space-y-6">
+                
+                <!-- 상세 페이지 바로가기 카드 그룹 -->
+                <div class="space-y-4">
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider">나의 집중 및 습관 도구</h3>
+                    
+                    <!-- 🔗 [상세 1: 집중 타이머 링크 카드] -->
+                    <a href="sub1.html" class="block bg-white border border-slate-200 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all hover:border-indigo-300 group">
+                        <div class="flex justify-between items-center">
+                            <div class="space-y-1">
+                                <span class="text-[10px] text-indigo-600 font-extrabold bg-indigo-50 px-2 py-0.5 rounded-md">상세 1</span>
+                                <h4 class="font-bold text-slate-800 text-base group-hover:text-indigo-600 transition-colors">집중 타이머 ⏳</h4>
+                                <p class="text-xs text-slate-400">뽀모도로 학습법을 통해 집중력 극대화</p>
+                            </div>
+                            <div class="bg-slate-50 group-hover:bg-indigo-50 p-3 rounded-2xl text-slate-400 group-hover:text-indigo-600 transition-colors">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- 🔗 [상세 2: 습관 & 일기장 링크 카드] -->
+                    <a href="sub2.html" class="block bg-white border border-slate-200 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all hover:border-violet-300 group">
+                        <div class="flex justify-between items-center">
+                            <div class="space-y-1">
+                                <span class="text-[10px] text-violet-600 font-extrabold bg-violet-50 px-2 py-0.5 rounded-md">상세 2</span>
+                                <h4 class="font-bold text-slate-800 text-base group-hover:text-violet-600 transition-colors">7일 습관 & 일기 📊</h4>
+                                <p class="text-xs text-slate-400">루틴을 기록하고 오늘의 생각 정리</p>
+                            </div>
+                            <div class="bg-slate-50 group-hover:bg-violet-50 p-3 rounded-2xl text-slate-400 group-hover:text-violet-600 transition-colors">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- 🧠 오늘의 무작위 명언 카드 -->
+                <div class="bg-slate-900 text-slate-100 rounded-3xl p-5 shadow-sm border border-slate-800 relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-6 opacity-5 text-8xl">
+                        <i class="fa-solid fa-quote-right"></i>
+                    </div>
+                    <h4 class="text-xs font-bold text-indigo-400 mb-2 flex items-center gap-1.5">
+                        <i class="fa-solid fa-brain"></i> 오늘의 동기부여 명언
+                    </h4>
+                    <p id="quoteText" class="text-sm font-semibold leading-relaxed">"가장 훌륭한 예술적 재능은 한 걸음씩 나아가는 인내다."</p>
+                    <span id="quoteAuthor" class="text-[10px] text-slate-400 block mt-2">- 발자크</span>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 🏷️ 푸터 영역 -->
+    <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400 mt-12">
+        <div class="max-w-5xl mx-auto px-4 space-y-1">
+            <p class="font-bold text-slate-500">학기말 웹 프로그래밍 프로젝트 가이드 - 하이퍼링크 버전</p>
+            <p>본 템플릿은 HTML <code>&lt;a href="..."&gt;</code> 링크와 LocalStorage 데이터 연동을 실습하는 교육용 교재입니다.</p>
+            <p class="text-[10px] text-slate-300">&copy; 2026 에이블 코딩 교육 연구소. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- ==========================================
+         JAVASCRIPT CODE: 메인 투두 및 수치 상태 제어
+         ========================================== -->
+    <script>
+        // 1. 로컬스토리지를 연동해 사용자의 To-Do 데이터를 영구 보존합니다.
+        // (다중 페이지 환경에서도 동일한 도메인이기 때문에 LocalStorage 데이터가 완벽하게 공유됩니다.)
+        let todos = JSON.parse(localStorage.getItem('multi_page_todos')) || [
+            { id: 1, text: "수능 필수 영단어 20개 학습", completed: true },
+            { id: 2, text: "수학 고난도 기출 3문제 완벽 해설 분석", completed: false },
+            { id: 3, text: "인디고 디자인 시스템 기반 레이아웃 구조 다듬기", completed: false }
+        ];
+
+        let targetDdayDate = localStorage.getItem('multi_page_dday') || "2026-11-12";
+
+        // 동기부여용 명언 데이터베이스
+        const quotes = [
+            { text: "시작이 반이다. 무엇이든 미루지 말고 오늘 먼저 시작하라.", author: "아리스토텔레스" },
+            { text: "천재는 1%의 영감과 99%의 땀으로 만들어진다.", author: "토마스 에디슨" },
+            { text: "성공은 매일 반복되는 아주 작은 노력들이 모인 총합이다.", author: "로버트 콜리어" },
+            { text: "계획 없는 목표는 단지 이루고 싶은 망상에 불과하다.", author: "생텍쥐페리" }
+        ];
+
+        // 2. 디데이(D-Day) 연산 로직
+        function calculateDday() {
+            const today = new Date();
+            const target = new Date(targetDdayDate);
+            const diffInTime = target.getTime() - today.getTime();
+            const daysLeft = Math.ceil(diffInTime / (1000 * 60 * 60 * 24));
+            
+            const display = document.getElementById('dDayDisplay');
+            if (daysLeft > 0) {
+                display.textContent = `D-${daysLeft}`;
+            } else if (daysLeft === 0) {
+                display.textContent = "D-Day 🎉";
+            } else {
+                display.textContent = `D+${Math.abs(daysLeft)}`;
+            }
+        }
+
+        // 수동 D-Day 변경 설정기
+        function changeDday() {
+            const userInput = prompt("새로운 목표 날짜를 입력하세요 (예시: YYYY-MM-DD)", targetDdayDate);
+            if (userInput && /^\d{4}-\d{2}-\d{2}$/.test(userInput)) {
+                targetDdayDate = userInput;
+                localStorage.setItem('multi_page_dday', userInput);
+                calculateDday();
+                showToast("디데이가 새롭게 갱신되었습니다!");
+            } else if (userInput) {
+                showToast("잘못된 날짜 형식입니다. (YYYY-MM-DD 형식으로 작성하세요)");
+            }
+        }
+
+        // 3. To-Do 데이터 리스팅 화면 출력
+        function renderTodos() {
+            const container = document.getElementById('todoListContainer');
+            container.innerHTML = '';
+
+            if (todos.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-slate-400 text-sm">
+                        <i class="fa-solid fa-clipboard-question text-3xl mb-2 text-slate-300 block"></i>
+                        오늘 할 일이 모두 비어있습니다. 새로 추가해 보세요!
+                    </div>
+                `;
+                document.getElementById('todoCountLabel').textContent = "총 0개 남음";
+                document.getElementById('progressPercent').textContent = "0%";
+                document.getElementById('progressBar').style.width = "0%";
+                return;
+            }
+
+            todos.forEach(todo => {
+                const todoDiv = document.createElement('div');
+                todoDiv.className = `flex items-center justify-between p-3.5 rounded-2xl border transition-all ${
+                    todo.completed 
+                        ? 'bg-slate-50/50 border-slate-100 text-slate-400' 
+                        : 'bg-white border-slate-200 text-slate-700 shadow-sm'
+                }`;
+
+                todoDiv.innerHTML = `
+                    <div class="flex items-center gap-3 flex-grow">
+                        <button onclick="toggleTodo(${todo.id})" class="text-lg w-6 h-6 flex items-center justify-center rounded-lg border transition-all ${
+                            todo.completed ? 'bg-indigo-500 border-indigo-500 text-white' : 'border-slate-300 hover:border-indigo-500'
+                        }">
+                            ${todo.completed ? '<i class="fa-solid fa-check text-xs"></i>' : ''}
+                        </button>
+                        <span class="text-sm font-semibold ${todo.completed ? 'todo-done' : ''}">${escapeHtml(todo.text)}</span>
+                    </div>
+                    <button onclick="deleteTodo(${todo.id})" class="text-slate-300 hover:text-red-500 transition-colors p-1" title="삭제">
+                        <i class="fa-solid fa-trash-can text-sm"></i>
+                    </button>
+                `;
+                container.appendChild(todoDiv);
+            });
+
+            // 상태 수치 계산 및 출력
+            const activeCount = todos.filter(t => !t.completed).length;
+            document.getElementById('todoCountLabel').textContent = `총 ${activeCount}개 남음`;
+
+            const donePercentage = Math.round((todos.filter(t => t.completed).length / todos.length) * 100) || 0;
+            document.getElementById('progressPercent').textContent = `${donePercentage}%`;
+            document.getElementById('progressBar').style.width = `${donePercentage}%`;
+        }
+
+        // 새로운 투두 할 일 추가
+        function addTodo(event) {
+            event.preventDefault();
+            const input = document.getElementById('todoInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const newTodo = {
+                id: Date.now(),
+                text: text,
+                completed: false
+            };
+
+            todos.push(newTodo);
+            localStorage.setItem('multi_page_todos', JSON.stringify(todos));
+            input.value = '';
+            renderTodos();
+            showToast("할 일이 목록에 추가되었습니다.");
+        }
+
+        // 투두 완료 체크 토글
+        function toggleTodo(id) {
+            todos = todos.map(todo => {
+                if (todo.id === id) {
+                    const nextState = !todo.completed;
+                    if (nextState) showToast("목표를 시원하게 정복했습니다! 🌟");
+                    return { ...todo, completed: nextState };
+                }
+                return todo;
+            });
+            localStorage.setItem('multi_page_todos', JSON.stringify(todos));
+            renderTodos();
+        }
+
+        // 투두 아이템 삭제
+        function deleteTodo(id) {
+            todos = todos.filter(todo => todo.id !== id);
+            localStorage.setItem('multi_page_todos', JSON.stringify(todos));
+            renderTodos();
+            showToast("할 일이 성공적으로 삭제되었습니다.");
+        }
+
+        // 보안 위협 우회용 이스케이프 문자 치환 유틸
+        function escapeHtml(text) {
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        // 커스텀 토스트 알림창 출력 유틸리티
+        function showToast(message) {
+            const toast = document.getElementById('toastNotification');
+            document.getElementById('toastMsg').textContent = message;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            toast.classList.add('opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 2500);
+        }
+
+        // 무작위 명언 탑재
+        function setRandomQuote() {
+            const randIndex = Math.floor(Math.random() * quotes.length);
+            const select = quotes[randIndex];
+            document.getElementById('quoteText').textContent = `"${select.text}"`;
+            document.getElementById('quoteAuthor').textContent = `- ${select.author}`;
+        }
+
+        // 브라우저 초기 구동
+        window.onload = function () {
+            calculateDday();
+            renderTodos();
+            setRandomQuote();
+        };
+    </script>
+</body>
+</html>

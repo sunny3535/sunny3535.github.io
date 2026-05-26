@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ko" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>갓생 플래너 - 습관 & 일기 (sub2.html)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome (아이콘 라이브러리) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 구글 웹 폰트 -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-full flex flex-col">
+
+    <!-- 📢 실시간 상태 메시지 토스트 알림창 (alert 방지용 커스텀 알림) -->
+    <div id="toastNotification" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs md:text-sm font-semibold px-6 py-3 rounded-full shadow-lg z-50 flex items-center gap-2 opacity-0 pointer-events-none transition-all duration-300">
+        <i class="fa-solid fa-circle-info text-indigo-400"></i>
+        <span id="toastMsg">습관 & 일기 페이지가 연동되었습니다.</span>
+    </div>
+
+    <!-- 🌐 네비게이션 헤더 -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
+            
+            <!-- 서비스 브랜드 로고 -->
+            <a href="index.html" class="flex items-center gap-2 text-indigo-600 font-black text-xl tracking-tight">
+                <i class="fa-solid fa-fire text-2xl animate-pulse text-indigo-500"></i>
+                <span>갓생 플래너<span class="text-xs font-semibold text-slate-400 ml-1.5">v1.3</span></span>
+            </a>
+            
+            <!-- 🔗 [교육 포인트] 동일 폴더 내의 index.html, sub1.html, sub2.html 간 링크 이동 가이드 -->
+            <nav class="flex gap-1 md:gap-2">
+                <a href="index.html" class="px-3 py-2 text-sm font-bold rounded-xl text-slate-500 hover:bg-slate-100 transition-all">
+                    <i class="fa-solid fa-house mr-1"></i> 메인 홈
+                </a>
+                <a href="sub1.html" class="px-3 py-2 text-sm font-bold rounded-xl text-slate-500 hover:bg-slate-100 transition-all">
+                    <i class="fa-solid fa-stopwatch mr-1"></i> 집중 타이머
+                </a>
+                <a href="sub2.html" class="px-3 py-2 text-sm font-bold rounded-xl text-indigo-600 bg-indigo-50 transition-all">
+                    <i class="fa-solid fa-circle-check mr-1"></i> 습관 & 일기
+                </a>
+            </nav>
+
+        </div>
+    </header>
+
+    <!-- 📦 메인 콘텐츠 영역 -->
+    <main class="flex-grow max-w-5xl w-full mx-auto px-4 py-8 space-y-6">
+
+        <!-- 뒤로가기 보조 바 -->
+        <div>
+            <a href="index.html" class="text-sm text-slate-400 hover:text-indigo-600 font-bold inline-flex items-center gap-1.5 transition-colors">
+                <i class="fa-solid fa-arrow-left"></i> 홈으로 돌아가기
+            </a>
+        </div>
+
+        <!-- 2열 반응형 그리드 배치 (좌측: 7일 습관 보드 / 우측: 일기 및 감정 아카이브) -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+            
+            <!-- 🎯 [구역 A] 7일 습관 체크리스트 -->
+            <div class="md:col-span-3 bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-4 mb-4">
+                    <h3 class="text-lg font-black flex items-center gap-2">
+                        <i class="fa-solid fa-arrows-spin text-indigo-500"></i>
+                        매일 반복 루틴 (7-Days)
+                    </h3>
+                    <span class="text-xs text-slate-400 font-medium">요일 완료 여부 클릭</span>
+                </div>
+
+                <!-- 습관 추가 등록 폼 -->
+                <form id="habitForm" class="flex gap-2 mb-6" onsubmit="addHabit(event)">
+                    <input type="text" id="habitInput" placeholder="예시) 아침 독서 10분, 플랭크 1분, 물 1L 마시기..." required
+                           class="flex-grow px-4 py-3 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 transition-all">
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-3 rounded-2xl text-sm flex items-center gap-1.5 shadow-md transition-all whitespace-nowrap">
+                        <i class="fa-solid fa-plus"></i> 습관 등록
+                    </button>
+                </form>
+
+                <!-- 습관 카드 출력 구역 -->
+                <div class="space-y-4" id="habitListContainer">
+                    <!-- 자바스크립트로 동적 생성되는 영역 -->
+                </div>
+            </div>
+
+            <!-- 📝 [우측 구역 B & C] 감정 일기 작성 폼 및 최근 히스토리 -->
+            <div class="md:col-span-2 space-y-6">
+                
+                <!-- [구역 B] 오늘의 감정 일기 쓰기 -->
+                <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+                    <h3 class="text-lg font-black flex items-center gap-2 border-b border-slate-100 pb-4 mb-4">
+                        <i class="fa-solid fa-pen-nib text-indigo-500"></i>
+                        오늘 하루 한 줄 일기
+                    </h3>
+
+                    <form id="diaryForm" class="space-y-3" onsubmit="addDiary(event)">
+                        <!-- 감정 셀렉터 영역 -->
+                        <div>
+                            <label class="text-[11px] font-bold text-slate-400 block mb-1">오늘 나의 감정은?</label>
+                            <div class="grid grid-cols-4 gap-1.5" id="emotionSelector">
+                                <button type="button" onclick="selectEmotion('😊', this)" class="emotion-btn py-2 text-lg rounded-xl border border-indigo-300 bg-indigo-50 hover:bg-slate-50 transition-colors font-bold text-slate-800">😊</button>
+                                <button type="button" onclick="selectEmotion('🤩', this)" class="emotion-btn py-2 text-lg rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors font-bold text-slate-800">🤩</button>
+                                <button type="button" onclick="selectEmotion('🥱', this)" class="emotion-btn py-2 text-lg rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors font-bold text-slate-800">🥱</button>
+                                <button type="button" onclick="selectDiaryEmotion('😭', this)" class="emotion-btn py-2 text-lg rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors font-bold text-slate-800">😭</button>
+                            </div>
+                        </div>
+
+                        <!-- 일기장 텍스트 필드 -->
+                        <div>
+                            <label class="text-[11px] font-bold text-slate-400 block mb-1">오늘의 짧은 성찰 한마디</label>
+                            <textarea id="diaryContent" rows="3" placeholder="오늘 어떤 뜻깊은 일이나 배움이 있었나요?" required
+                                      class="w-full px-3 py-2 border border-slate-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 text-slate-800"></textarea>
+                        </div>
+
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-2xl text-sm shadow-md transition-all flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-save"></i> 일기 저장하기
+                        </button>
+                    </form>
+                </div>
+
+                <!-- [구역 C] 일기 목록 히스토리 아카이브 -->
+                <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+                    <h4 class="font-bold text-slate-800 text-sm border-b border-slate-100 pb-3 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-history text-indigo-500"></i>
+                        최근 일기 히스토리
+                    </h4>
+                    
+                    <div class="space-y-2 max-h-[220px] overflow-y-auto pr-1" id="diaryListContainer">
+                        <!-- 자바스크립트로 일기 카드들이 동적 생성되는 구역 -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 🏷️ 푸터 영역 -->
+    <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400 mt-12">
+        <div class="max-w-5xl mx-auto px-4 space-y-1">
+            <p class="font-bold text-slate-500">학기말 웹 프로그래밍 프로젝트 가이드 - 하이퍼링크 버전</p>
+            <p>본 템플릿은 HTML <code>&lt;a href="..."&gt;</code> 링크와 LocalStorage 데이터 연동을 실습하는 교육용 교재입니다.</p>
+            <p class="text-[10px] text-slate-300">&copy; 2026 에이블 코딩 교육 연구소. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- ====================================================================
+         JAVASCRIPT CODE: 습관 추적 및 일기 저장 제어 엔진
+         ==================================================================== -->
+    <script>
+        // ==========================================
+        // 1. 상태 데이터 복원 및 관리 (Local Storage 동기화)
+        // ==========================================
+        let habits = JSON.parse(localStorage.getItem('multi_page_habits')) || [
+            { id: 1, text: "매일 코딩 공부 30분", history: [true, false, true, false, false, false, false] },
+            { id: 2, text: "아침 기상 후 침구 정리", history: [true, true, true, true, false, false, false] }
+        ];
+
+        let diaries = JSON.parse(localStorage.getItem('multi_page_diaries')) || [
+            { id: 1, date: "2026-05-25", emotion: "😊", text: "오늘 친구들과 프로젝트 아이디어를 회의했다. 다들 좋아해줘서 기분이 대단히 좋았음!" }
+        ];
+
+        let currentSelectedEmotion = "😊";
+        const dayNames = ['월', '화', '수', '목', '금', '토', '일'];
+
+        // DOM 캐싱
+        const habitListContainer = document.getElementById('habitListContainer');
+        const habitInput = document.getElementById('habitInput');
+        const diaryContent = document.getElementById('diaryContent');
+        const diaryListContainer = document.getElementById('diaryListContainer');
+
+        // ==========================================
+        // 2. [습관 관리] 렌더링 및 기능 구현
+        // ==========================================
+        function renderHabits() {
+            habitListContainer.innerHTML = '';
+
+            if (habits.length === 0) {
+                habitListContainer.innerHTML = `
+                    <div class="text-center py-8 text-slate-400 text-sm">
+                        <i class="fa-solid fa-arrows-spin text-3xl mb-2 text-slate-300 block"></i>
+                        매일 반복할 습관이 없습니다. 루틴을 추가해 보세요!
+                    </div>
+                `;
+                return;
+            }
+
+            habits.forEach(habit => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-50 border border-slate-100 p-4 rounded-2xl space-y-3";
+
+                let dayButtonsHTML = '';
+                for (let i = 0; i < 7; i++) {
+                    const isDone = habit.history[i];
+                    dayButtonsHTML += `
+                        <button onclick="toggleHabitDay(${habit.id}, ${i})" class="flex flex-col items-center justify-center p-2 rounded-xl border transition-all ${
+                            isDone 
+                                ? 'bg-indigo-600 border-indigo-600 text-white font-bold' 
+                                : 'bg-white border-slate-200 text-slate-400 hover:border-indigo-400'
+                        }">
+                            <span class="text-[9px] uppercase mb-1 block">${dayNames[i]}</span>
+                            <i class="fa-solid ${isDone ? 'fa-circle-check' : 'fa-circle-notch text-xs'}"></i>
+                        </button>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-center border-b border-slate-200/60 pb-2">
+                        <span class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+                            <i class="fa-solid fa-square-check text-xs text-indigo-500"></i>
+                            ${escapeHtml(habit.text)}
+                        </span>
+                        <button onclick="deleteHabit(${habit.id})" class="text-slate-300 hover:text-red-500 transition-colors p-1" title="삭제">
+                            <i class="fa-solid fa-trash-can text-sm"></i>
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-7 gap-1 md:gap-2">
+                        ${dayButtonsHTML}
+                    </div>
+                `;
+                habitListContainer.appendChild(card);
+            });
+        }
+
+        // 새로운 습관 등록
+        function addHabit(event) {
+            event.preventDefault();
+            const text = habitInput.value.trim();
+            if (!text) return;
+
+            const newHabit = {
+                id: Date.now(),
+                text: text,
+                history: [false, false, false, false, false, false, false]
+            };
+
+            habits.push(newHabit);
+            saveHabitToStorage();
+            habitInput.value = '';
+            renderHabits();
+            showToast("새 루틴 계획이 등록되었습니다.");
+        }
+
+        // 특정 습관 요일별 성취도 토글
+        window.toggleHabitDay = function(habitId, dayIndex) {
+            habits = habits.map(habit => {
+                if (habit.id === habitId) {
+                    const nextHistory = [...habit.history];
+                    nextHistory[dayIndex] = !nextHistory[dayIndex];
+                    return { ...habit, history: nextHistory };
+                }
+                return habit;
+            });
+            saveHabitToStorage();
+            renderHabits();
+        };
+
+        // 습관 지우기
+        window.deleteHabit = function(id) {
+            habits = habits.filter(h => h.id !== id);
+            saveHabitToStorage();
+            renderHabits();
+            showToast("습관 항목을 삭제했습니다.");
+        };
+
+        function saveHabitToStorage() {
+            localStorage.setItem('multi_page_habits', JSON.stringify(habits));
+        }
+
+
+        // ==========================================
+        // 3. [일기 관리] 렌더링 및 기능 구현
+        // ==========================================
+        function renderDiaries() {
+            diaryListContainer.innerHTML = '';
+
+            if (diaries.length === 0) {
+                diaryListContainer.innerHTML = `
+                    <div class="text-center py-6 text-slate-400 text-xs">
+                        작성된 오늘의 일기가 없습니다.
+                    </div>
+                `;
+                return;
+            }
+
+            // 최신 글이 상단에 오도록 복사본을 역순 출력
+            [...diaries].reverse().forEach(diary => {
+                const div = document.createElement('div');
+                div.className = "p-3 bg-slate-50 border border-slate-100 rounded-2xl flex gap-2 items-start";
+
+                div.innerHTML = `
+                    <span class="text-2xl pt-0.5">${diary.emotion}</span>
+                    <div class="flex-grow space-y-1">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[9px] text-slate-400 font-extrabold">${diary.date}</span>
+                            <button onclick="deleteDiary(${diary.id})" class="text-slate-300 hover:text-red-500 text-xs transition-colors p-0.5">&times;</button>
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed font-medium">${escapeHtml(diary.text)}</p>
+                    </div>
+                `;
+                diaryListContainer.appendChild(div);
+            });
+        }
+
+        // 감정 선택자 제어
+        window.selectEmotion = function(emotion, element) {
+            const btns = document.querySelectorAll('.emotion-btn');
+            btns.forEach(btn => {
+                btn.className = "emotion-btn py-2 text-lg rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors font-bold text-slate-800";
+            });
+            element.className = "emotion-btn py-2 text-lg rounded-xl border border-indigo-300 bg-indigo-50 hover:bg-slate-50 transition-colors font-bold text-slate-800";
+            currentSelectedEmotion = emotion;
+        };
+
+        // 일기 저장하기
+        function addDiary(event) {
+            event.preventDefault();
+            const text = diaryContent.value.trim();
+            if (!text) return;
+
+            const today = new Date();
+            const dateStr = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
+
+            const newDiary = {
+                id: Date.now(),
+                date: dateStr,
+                emotion: currentSelectedEmotion,
+                text: text
+            };
+
+            diaries.push(newDiary);
+            saveDiaryToStorage();
+            diaryContent.value = '';
+            renderDiaries();
+            showToast("소중한 한 줄 회고가 저장되었습니다! 📝");
+        }
+
+        // 일기 항목 삭제
+        window.deleteDiary = function(id) {
+            diaries = diaries.filter(d => d.id !== id);
+            saveDiaryToStorage();
+            renderDiaries();
+            showToast("일기를 삭제했습니다.");
+        };
+
+        function saveDiaryToStorage() {
+            localStorage.setItem('multi_page_diaries', JSON.stringify(diaries));
+        }
+
+
+        // ==========================================
+        // 4. 유틸리티 공통 함수
+        // ==========================================
+        function escapeHtml(text) {
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toastNotification');
+            document.getElementById('toastMsg').textContent = message;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            toast.classList.add('opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 2500);
+        }
+
+        // 최초 구동점
+        window.onload = function() {
+            renderHabits();
+            renderDiaries();
+        };
+    </script>
+</body>
+</html>
