@@ -22,7 +22,7 @@ const TOOLS = {
 const MAIL_TOOLS = ["composeMail", "showPreview", "sendMail"];
 
 // 동일 도구 호출 안전 한도 (메일 관련 도구 기준)
-const TOOL_CALL_LIMIT = 5;
+const TOOL_CALL_LIMIT = 50;
 
 // 메일 도구별 호출 횟수 기록용 객체
 const mailToolCallCounts = {};
