@@ -33,17 +33,6 @@ let gmailAccessToken = null;
 // 친구 메일 주소 화이트리스트
 const FRIEND_EMAIL_WHITELIST = [
   "grayegg@gmail.com",
-  "blackegg@daum.net",
-  "sunny.icmhs@gmail.com",
-  "sansoop1234@gmail.com",
-  "0716tjswo09@gmail.com",
-  "kimjiminqqq123@gmail.com",
-  "kjw0011069@gmail.com",
-  "sopia0322@gmail.com",
-  "munyejin22@gmail.com",
-  "linakang0309@gmail.com",
-  "yexn6863@gmail.com",
-  "yeum0908@gmail.com",
 
 ];
 
@@ -424,7 +413,7 @@ function runAskUser(nextField) {
 
   if (nextField === "recipient") {
     question =
-      "이 메일을 보낼 친구의 메일 주소를 써 주세요. (다음 중 하나만 사용할 수 있어요: sansoop1234@gmail.com, 0716tjswo09@gmail.com, kimjiminqqq123@gmail.com, kjw0011069@gmail.com, sopia0322@gmail.com, munyejin22@gmail.com, linakang0309@gmail.com, yexn6863@gmail.com, yeum0908@gmail.com, grayegg@gmail.com, blackegg@daum.net, sunny.icmhs@gmail.com)";
+      "이 메일을 보낼 친구의 메일 주소를 써 주세요. (다음 중 하나만 사용할 수 있어요: grayegg@gmail.com, blackegg@daum.net)";
     thought =
       "수신자 이메일이 친구 메일 화이트리스트에 있는지 알아야 발송 가능 여부를 판단할 수 있다.";
   } else if (nextField === "subject") {
