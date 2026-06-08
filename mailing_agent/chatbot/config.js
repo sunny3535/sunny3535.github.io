@@ -13,6 +13,6 @@ const OPENAI_MODEL = "openai/gpt-5.1";
 // - GMAIL_CLIENT_ID: 학생이 제공한 OAuth 클라이언트 ID
 // - GMAIL_API_SCOPE: gmail.send 권한만 요청
 const GMAIL_CLIENT_ID =
-  "360554021962-dlk19pht1km85aun3fcdeqke9c239knk.apps.googleusercontent.com";
+  ".apps.googleusercontent.com";
 const GMAIL_API_SCOPE = "https://www.googleapis.com/auth/gmail.send";
 
