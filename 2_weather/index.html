@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오늘의 날씨</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .weather-card {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body id="app-body" class="bg-blue-50 transition-colors duration-500 min-h-screen flex items-center justify-center p-4">
+
+    <div id="weather-card" class="weather-card bg-white p-8 rounded-3xl shadow-2xl w-full max-w-sm text-center transition-all duration-500">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">오늘의 날씨</h1>
+        
+        <div id="icon-container" class="text-8xl mb-6 transition-transform duration-500">☀️</div>
+        
+        <h2 id="status-text" class="text-3xl font-extrabold text-gray-800 mb-8">맑음</h2>
+
+        <div class="grid grid-cols-3 gap-2">
+            <button onclick="updateWeather('sunny')" class="p-3 bg-yellow-100 hover:bg-yellow-200 rounded-xl font-bold text-yellow-700 transition">맑음</button>
+            <button onclick="updateWeather('cloudy')" class="p-3 bg-gray-100 hover:bg-gray-200 rounded-xl font-bold text-gray-700 transition">흐림</button>
+            <button onclick="updateWeather('rainy')" class="p-3 bg-blue-100 hover:bg-blue-200 rounded-xl font-bold text-blue-700 transition">비</button>
+        </div>
+    </div>
+
+    <script>
+        const weatherData = {
+            sunny: { icon: '☀️', text: '맑음', bgColor: 'bg-yellow-50', cardBg: 'bg-white' },
+            cloudy: { icon: '☁️', text: '흐림', bgColor: 'bg-gray-200', cardBg: 'bg-white' },
+            rainy: { icon: '🌧️', text: '비', bgColor: 'bg-blue-200', cardBg: 'bg-white' }
+        };
+
+        function updateWeather(type) {
+            const data = weatherData[type];
+            const body = document.getElementById('app-body');
+            const iconContainer = document.getElementById('icon-container');
+            const statusText = document.getElementById('status-text');
+
+            body.className = `${data.bgColor} transition-colors duration-500 min-h-screen flex items-center justify-center p-4`;
+            iconContainer.innerText = data.icon;
+            statusText.innerText = data.text;
+            
+            // Add a little pop effect
+            iconContainer.classList.add('scale-110');
+            setTimeout(() => iconContainer.classList.remove('scale-110'), 200);
+        }
+    </script>
+</body>
+</html>

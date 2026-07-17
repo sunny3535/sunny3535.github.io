@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오늘의 명언 뽑기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-indigo-50 to-blue-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 text-center transition-all duration-300">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">✨ 오늘의 명언</h1>
+        
+        <div id="quote-box" class="min-h-[120px] flex flex-col justify-center items-center mb-8">
+            <p id="quote" class="text-lg italic text-gray-700 font-medium">"버튼을 눌러 명언을 확인해보세요!"</p>
+            <p id="author" class="text-sm text-gray-500 mt-3 font-semibold"></p>
+        </div>
+
+        <button id="draw-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-2xl transition duration-200 transform hover:scale-105 active:scale-95 shadow-lg">
+            명언 뽑기
+        </button>
+    </div>
+
+    <script>
+        // 명언 데이터 배열
+        const quotes = [
+            { text: "삶이 있는 한 희망은 있다.", author: "키케로" },
+            { text: "산다는 것 그것은 치열한 전투이다.", author: "로망 롤랑" },
+            { text: "언제나 현재에 집중할 수 있다면 행복할 것이다.", author: "파울로 코엘료" },
+            { text: "신은 용기 있는 자를 결코 버리지 않는다.", author: "켄 힐" },
+            { text: "피할 수 없으면 즐겨라.", author: "로버트 엘리엇" }
+        ];
+
+        const quoteElement = document.getElementById('quote');
+        const authorElement = document.getElementById('author');
+        const drawBtn = document.getElementById('draw-btn');
+
+        drawBtn.addEventListener('click', () => {
+            // 랜덤 인덱스 생성
+            const randomIndex = Math.floor(Math.random() * quotes.length);
+            const selectedQuote = quotes[randomIndex];
+
+            // 화면 업데이트
+            quoteElement.innerText = `"${selectedQuote.text}"`;
+            authorElement.innerText = `- ${selectedQuote.author} -`;
+            
+            // 시각적 효과 추가
+            quoteElement.classList.add('animate-pulse');
+            setTimeout(() => quoteElement.classList.remove('animate-pulse'), 500);
+        });
+    </script>
+</body>
+</html>

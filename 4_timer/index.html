@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1분 타이머</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm text-center">
+        <h1 class="text-2xl font-bold mb-6 text-gray-800">카운트다운 타이머</h1>
+        
+        <div id="display" class="text-6xl font-mono font-bold text-blue-600 mb-8">01:00</div>
+        
+        <div class="flex gap-2 justify-center">
+            <button id="startBtn" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-semibold transition">시작</button>
+            <button id="pauseBtn" class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded-lg font-semibold transition">일시정지</button>
+            <button id="resetBtn" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold transition">리셋</button>
+        </div>
+
+        <div id="message" class="mt-6 text-lg font-bold text-red-600 hidden">시간 완료!</div>
+    </div>
+
+    <script>
+        let timeLeft = 60;
+        let timerId = null;
+        const display = document.getElementById('display');
+        const message = document.getElementById('message');
+
+        const updateDisplay = () => {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            display.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        };
+
+        document.getElementById('startBtn').addEventListener('click', () => {
+            if (timerId) return;
+            message.classList.add('hidden');
+            timerId = setInterval(() => {
+                timeLeft--;
+                updateDisplay();
+                if (timeLeft <= 0) {
+                    clearInterval(timerId);
+                    timerId = null;
+                    message.classList.remove('hidden');
+                }
+            }, 1000);
+        });
+
+        document.getElementById('pauseBtn').addEventListener('click', () => {
+            clearInterval(timerId);
+            timerId = null;
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            clearInterval(timerId);
+            timerId = null;
+            timeLeft = 60;
+            updateDisplay();
+            message.classList.add('hidden');
+        });
+    </script>
+</body>
+</html>
